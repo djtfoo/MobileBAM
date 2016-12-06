@@ -6,8 +6,8 @@ package com.sidm.mgpweek5;
 
 public class Tower {
 
-    Vector2 position;
-    int hp;
+    private Vector2 position;
+    private int hp;
 
     // Constructor
     protected Tower() {
