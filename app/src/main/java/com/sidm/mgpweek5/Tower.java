@@ -48,4 +48,9 @@ public class Tower {
     public void TakeDamage(int damage) {
         SetHP(hp - damage);
     }
+
+    // Update
+    public void Update() {
+
+    }
 }

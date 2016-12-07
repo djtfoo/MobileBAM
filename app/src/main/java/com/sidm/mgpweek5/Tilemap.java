@@ -89,4 +89,21 @@ public class Tilemap {
             }
         }
     }
+
+    public String ToString()
+    {
+        String str = new String();
+        str += String.valueOf(rows);
+        for(int y = 0; y < cols; y++)
+        {
+            for(int x = 0; x < rows; x++)
+            {
+                //str += String.valueOf(tilemap[y][x]);
+                str += ".";
+                str += ",";
+            }
+            str += "\n";
+        }
+        return str;
+    }
 }

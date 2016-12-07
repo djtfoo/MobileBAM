@@ -16,6 +16,11 @@ public class Vector2 {
         y = 0.f;
     }
 
+    public Vector2(Vector2 vector) {
+        x = vector.x;
+        y = vector.y;
+    }
+
     public Vector2(float xVal, float yVal) {
         x = xVal;
         y = yVal;
@@ -42,6 +47,17 @@ public class Vector2 {
     public float GetLength() {
         float lengthSquared = x * x + y * y;
         return (float)sqrt(lengthSquared);
+    }
+
+    public String ToString()
+    {
+        String str = new String();
+        str += "[";
+        str += String.valueOf(x);
+        str += ",";
+        str += String.valueOf(y);
+        str += "]";
+        return str;
     }
 
     public float GetLengthSquared() {
@@ -120,7 +136,7 @@ public class Vector2 {
     }
 
     public Vector2 GetNormalized() {
-        Vector2 result = new Vector2();
+        Vector2 result = this;
         result.Normalize();
 
         return result;

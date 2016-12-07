@@ -9,7 +9,8 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
+import android.os.Vibrator;
+import java.io.InputStreamReader;
 import java.util.Random;
 
 /**
@@ -20,7 +21,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Implement this interface to receive information about changes to the surface.
 
     private Gamethread myThread = null; // Thread to control the rendering
-
+    private Vibrator vibrator = (Vibrator)this.getContext().getSystemService(Context.VIBRATOR_SERVICE);
     // Sprite animations
     private Spriteanimation flyincoins;
     private int coinX = 300, coinY = 300;
@@ -49,7 +50,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public float FPS;
     float deltaTime;
     long dt;
-
+    short m_touchX;
+    short m_touchY;
+    Vector2 touchPoint = new Vector2();
+    Vector2 holdPoint = new Vector2();
+    Vector2 pos = new Vector2();
+    Tilemap map = new Tilemap();
     // Variable for Game State check
     private short GameState;
 
@@ -92,6 +98,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         (getResources(), R.drawable.flystar),
                         Screenwidth / 4, Screenheight / 10, true), 320, 64, 5, 5);
 
+        map.Init("assets/MapTest.csv");
+        map.tileSize_X = 120;
+        map.tileSize_Y = 120;
         // Create the game loop thread
         myThread = new Gamethread(getHolder(), this);
 
@@ -113,8 +122,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Destroy the thread
         if (myThread.isAlive()){
             myThread.startRun(false);
-
-
         }
         boolean retry = true;
         while (retry) {
@@ -142,7 +149,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawBitmap(scaledbg, bgX + Screenwidth, bgY, null);    // 2nd background image
 
         // 4d) Draw the spaceships
-        canvas.drawBitmap(ship[shipindex], mX, mY, null);
+        canvas.drawBitmap(ship[shipindex], pos.x, pos.y, null);
         // location of the ship is based on touch
 
         // draw the stars
@@ -157,7 +164,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         RenderTextOnScreen(canvas, "FPS " + FPS, 130, 75, 50);
 
         if (moveship){
-            RenderTextOnScreen(canvas, "TRIGGERED", 130, 75, 250);
+            RenderTextOnScreen(canvas, "TRIGGERED", 130, 125, 50);
+            RenderTextOnScreen(canvas, "Touch Point: " + touchPoint.ToString(), 130, 175, 50);
+            RenderTextOnScreen(canvas, "Hold Point: " + holdPoint.ToString(), 130, 225, 50);
+            RenderTextOnScreen(canvas, map.ToString(), 130, 275, 50);
         }
     }
 
@@ -165,7 +175,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     //Update method to update the game play
     public void update(float dt, float fps){
         FPS = fps;
-
+        this.deltaTime = dt;
         switch (GameState) {
             case 0: {
                 // 3) Update the background to allow panning effect
@@ -180,6 +190,25 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
                 // make sprite animate
                 flyincoins.update(System.currentTimeMillis());
+
+                if(moveship)
+                {
+                    Vector2 Norm = new Vector2(holdPoint.Subtract(touchPoint).GetNormalized());
+
+
+                    /*if (holdPoint.x > touchPoint.x) {
+                        mX += deltaTime * 200;
+                    } else if (holdPoint.x < touchPoint.x) {
+                        mX -= deltaTime * 200;
+                    }
+                    if (holdPoint.y > touchPoint.y) {
+                        mY += deltaTime * 200;
+                    } else if (holdPoint.y < touchPoint.y) {
+                        mY -= deltaTime * 200;
+                    }
+                    */
+
+                }
             }
             break;
         }
@@ -237,33 +266,41 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return super.onTouchEvent(event);
         */
 
-        short m_touchX = (short) event.getX();
-        short m_touchY = (short) event.getY();
-
         int action = event.getAction(); // Check for the action of touch
 
         switch(action) {
 
             case MotionEvent.ACTION_DOWN:
                 // To check finger touch x,y within image, i.e holding down on the image
-                if (CheckCollision(
+                /*if (CheckCollision(
                         mX, mY, ship[shipindex].getWidth() / 2, ship[shipindex].getHeight() / 2,
                         m_touchX, m_touchY, 0, 0))
                     moveship = true;
                 else
                     moveship = false;
+                  */
 
-
-                break;
-
+                if(moveship == false) {
+                    if(vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    moveship = true;
+                    touchPoint.x = (short) event.getX();
+                    touchPoint.y = (short) event.getY();
+                }else if(moveship == true)
+                {
+                    holdPoint.x = (short) event.getX();
+                    holdPoint.y = (short) event.getY();
+                }
             case MotionEvent.ACTION_MOVE:
 
                 if (moveship == true)
                 {
-                    mX = (short) (m_touchX - ship[shipindex].getWidth() / 2);
-                    mY = (short) (m_touchY - ship[shipindex].getHeight() / 2);
+                    //mX = (short) (m_touchX - ship[shipindex].getWidth() / 2);
+                    //mY = (short) (m_touchY - ship[shipindex].getHeight() / 2);
 
-                    // Check Collision with coin
+                    /*// Check Collision with coin
                     if (CheckCollision(
                             mX, mY, ship[shipindex].getWidth() / 2, ship[shipindex].getHeight() / 2,
                             coinX, coinY, flyincoins.getSpriteWidth() / 2, flyincoins.getSpriteHeight() / 2))
@@ -272,8 +309,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         coinX = randomNum.nextInt(Screenwidth);
                         coinY = randomNum.nextInt(Screenheight);
                     }
-
+                    */
+                    holdPoint.x = (short) event.getX();
+                    holdPoint.y = (short) event.getY();
                 }
+                break;
+            case MotionEvent.ACTION_UP:
+                moveship = false;
                 break;
         }
 

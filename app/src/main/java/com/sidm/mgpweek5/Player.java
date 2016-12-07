@@ -11,8 +11,12 @@ public class Player {
         IDLE(0),
         MOVE(1),
         JUMP(2),
-        ATTACK_MELEE(3),
-        ATTACK_RANGED(4);
+        MELEE_1(3),
+        MELEE_2(4),
+        MELEE_3(5),
+        MELEE_JUMP(6),
+        RANGED_ATTACK(7),
+        HURT(8);
 
         private int value;
 
@@ -44,6 +48,11 @@ public class Player {
 
     public Vector2 GetPosition() {
         return position;
+    }
+
+    // Update
+    public void Update(double dt) {
+
     }
 
     // Movement

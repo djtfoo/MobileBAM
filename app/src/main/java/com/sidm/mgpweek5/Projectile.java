@@ -44,6 +44,11 @@ public class Projectile {
         return velocity;
     }
 
+    // Update
+    public void Update() {
+
+    }
+
     // Lifespan
     public double GetLifespan() {
         return lifespan;

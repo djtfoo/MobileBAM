@@ -16,7 +16,7 @@ import java.io.InterruptedIOException;
 public class Splashpage extends Activity {
 
     protected boolean _active = true;
-    protected int _splashTime = 5000;    // in ms
+    protected int _splashTime = 000;    // in ms
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

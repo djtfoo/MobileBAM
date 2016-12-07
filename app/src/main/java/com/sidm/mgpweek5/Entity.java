@@ -8,8 +8,8 @@ public class Entity {
 
     public enum ENTITY_STATE {
 
-        IDLE(0),
-        DAMAGED(1);
+        IDLE(0);
+        //DAMAGED(1);
 
         private int value;
 
@@ -62,6 +62,11 @@ public class Entity {
             return true;
 
         return false;
+    }
+
+    // Update
+    public void Update() {
+
     }
 
     // state
