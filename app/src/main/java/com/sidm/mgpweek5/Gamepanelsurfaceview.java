@@ -6,12 +6,11 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.os.Vibrator;
-import java.io.InputStreamReader;
-import java.util.Random;
 
 /**
  * Created by Foo on 24/11/2016.
@@ -30,7 +29,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     // 1a) Variables used for background rendering
     private Bitmap bg, scaledbg;    // bg = background; scaledbg = scaled version of bg
-
     // 1b) Define Screen width and Screen height as integer
     int Screenwidth, Screenheight;
 
@@ -52,13 +50,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     long dt;
     short m_touchX;
     short m_touchY;
-    Vector2 touchPoint = new Vector2();
-    Vector2 holdPoint = new Vector2();
+
     Vector2 pos = new Vector2();
     Tilemap map = new Tilemap();
+    Player player = new Player();
+    GUIbutton RightButton;
+    GUIbutton LeftButton;
+    GUIbutton JumpButton;
+    GUIbutton AttackButton;
+    boolean test;
     // Variable for Game State check
     private short GameState;
-
     //constructor for this GamePanelSurfaceView class
     public Gamepanelsurfaceview (Context context){
 
@@ -77,6 +79,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.boss1_scene);
         scaledbg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
 
+        InitButtons();
+        //Point1 = new TouchPoint();
+        test = false;
         // 4c) Load the images of the spaceships
         //ship[0] = BitmapFactory.decodeResource(getResources(), R.drawable.ship2_1);
         //ship[1] = BitmapFactory.decodeResource(getResources(), R.drawable.ship2_2);
@@ -106,6 +111,67 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Make the GamePanel focusable so it can handle events
         setFocusable(true);
+    }
+
+    public void InitButtons()
+    {
+        RightButton = new GUIbutton();
+        LeftButton = new GUIbutton();
+        AttackButton = new GUIbutton();
+        JumpButton = new GUIbutton();
+
+        int buttonSize = (int)(112 * ((float)Screenwidth / (float)Screenheight));
+
+        RightButton.SetButtonSize(buttonSize);
+        LeftButton.SetButtonSize(buttonSize);
+        JumpButton.SetButtonSize(buttonSize);
+        AttackButton.SetButtonSize((int)(buttonSize * 1.45));
+
+        LeftButton.SetButtonPos((int)(Screenwidth * 0.0625), (int)(Screenheight * 0.74));
+        RightButton.SetButtonPos((int)(Screenwidth * 0.0625) + (int)(Screenwidth * 0.02) + buttonSize, (int)(Screenheight * 0.74));
+        JumpButton.SetButtonPos((int)(Screenwidth * 0.664), (int)(Screenheight * 0.74));
+        AttackButton.SetButtonPos((int)(Screenwidth * 0.789), (int)(Screenheight * 0.657));
+
+        LeftButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton));
+        RightButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton));
+        JumpButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.jumpbutton));
+        AttackButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton));
+
+        LeftButton.SetBitMapPressed(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton_pressed));
+        RightButton.SetBitMapPressed(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton_pressed));
+        JumpButton.SetBitMapPressed(BitmapFactory.decodeResource(getResources(), R.drawable.jumpbutton_pressed));
+        AttackButton.SetBitMapPressed(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton_pressed));
+    }
+
+    public void RenderButtons(Canvas canvas)
+    {
+        Bitmap scaledLeftButton;
+        if(LeftButton.isPressed())
+            scaledLeftButton = Bitmap.createScaledBitmap(LeftButton.GetBitMapPressed(), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true);
+        else
+            scaledLeftButton = Bitmap.createScaledBitmap(LeftButton.GetBitMap(), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true);
+        canvas.drawBitmap(scaledLeftButton, (int)(LeftButton.GetPosition().x), (int)(LeftButton.GetPosition().y), null);
+
+        Bitmap scaledRightButton;
+        if(RightButton.isPressed())
+            scaledRightButton = Bitmap.createScaledBitmap(RightButton.GetBitMapPressed(), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true);
+        else
+            scaledRightButton = Bitmap.createScaledBitmap(RightButton.GetBitMap(), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true);
+        canvas.drawBitmap(scaledRightButton, (int)(RightButton.GetPosition().x), (int)(RightButton.GetPosition().y), null);
+
+        Bitmap scaledAttackButton;
+        if(AttackButton.isPressed())
+            scaledAttackButton = Bitmap.createScaledBitmap(AttackButton.GetBitMapPressed(), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true);
+        else
+            scaledAttackButton = Bitmap.createScaledBitmap(AttackButton.GetBitMap(), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true);
+        canvas.drawBitmap(scaledAttackButton, (int)(AttackButton.GetPosition().x), (int)(AttackButton.GetPosition().y), null);
+
+        Bitmap scaledJumpButton;
+        if(JumpButton.isPressed())
+            scaledJumpButton = Bitmap.createScaledBitmap(JumpButton.GetBitMapPressed(), JumpButton.GetButtonSize(), JumpButton.GetButtonSize(), true);
+        else
+            scaledJumpButton = Bitmap.createScaledBitmap(JumpButton.GetBitMap(), JumpButton.GetButtonSize(), JumpButton.GetButtonSize(), true);
+        canvas.drawBitmap(scaledJumpButton, (int)(JumpButton.GetPosition().x), (int)(JumpButton.GetPosition().y), null);
     }
 
     //must implement inherited abstract methods
@@ -149,7 +215,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawBitmap(scaledbg, bgX + Screenwidth, bgY, null);    // 2nd background image
 
         // 4d) Draw the spaceships
-        canvas.drawBitmap(ship[shipindex], pos.x, pos.y, null);
+        canvas.drawBitmap(ship[shipindex], player.GetPosition().x, player.GetPosition().y, null);
+
+        RenderButtons(canvas);
         // location of the ship is based on touch
 
         // draw the stars
@@ -162,12 +230,24 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Bonus) To print FPS on the screen
         RenderTextOnScreen(canvas, "FPS " + FPS, 130, 75, 50);
-
+        //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
+        //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
+        if(test)
+        RenderTextOnScreen(canvas, "TEST", 130, 375, 50);
+        if(RightButton.isPressed()) {
+            RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, 50);
+        }
+        if(LeftButton.isPressed()) {
+            RenderTextOnScreen(canvas, "Left Button Pressed", 130, 325, 50);
+        }
+        if(AttackButton.isPressed()) {
+            RenderTextOnScreen(canvas, "Attack Button Pressed", 130, 375, 50);
+        }
+        if(JumpButton.isPressed()) {
+            RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, 50);
+        }
         if (moveship){
             RenderTextOnScreen(canvas, "TRIGGERED", 130, 125, 50);
-            RenderTextOnScreen(canvas, "Touch Point: " + touchPoint.ToString(), 130, 175, 50);
-            RenderTextOnScreen(canvas, "Hold Point: " + holdPoint.ToString(), 130, 225, 50);
-            RenderTextOnScreen(canvas, map.ToString(), 130, 275, 50);
         }
     }
 
@@ -191,23 +271,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 // make sprite animate
                 flyincoins.update(System.currentTimeMillis());
 
-                if(moveship)
+                if(RightButton.isPressed())
                 {
-                    Vector2 Norm = new Vector2(holdPoint.Subtract(touchPoint).GetNormalized());
-
-
-                    /*if (holdPoint.x > touchPoint.x) {
-                        mX += deltaTime * 200;
-                    } else if (holdPoint.x < touchPoint.x) {
-                        mX -= deltaTime * 200;
-                    }
-                    if (holdPoint.y > touchPoint.y) {
-                        mY += deltaTime * 200;
-                    } else if (holdPoint.y < touchPoint.y) {
-                        mY -= deltaTime * 200;
-                    }
-                    */
-
+                    player.MoveRight(deltaTime);
+                }
+                else if(LeftButton.isPressed())
+                {
+                    player.MoveLeft(deltaTime);
                 }
             }
             break;
@@ -253,7 +323,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-
         /*
         // 5) In event of touch on screen, the spaceship will relocate to the point of touch
         short m_touchX = (short) event.getX();
@@ -266,56 +335,279 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return super.onTouchEvent(event);
         */
 
+        //int touch_1 = event.getPointerId(0);
+        //int touch_2 = event.getPointerId(1);
+
         int action = event.getAction(); // Check for the action of touch
 
         switch(action) {
 
             case MotionEvent.ACTION_DOWN:
-                // To check finger touch x,y within image, i.e holding down on the image
-                /*if (CheckCollision(
-                        mX, mY, ship[shipindex].getWidth() / 2, ship[shipindex].getHeight() / 2,
-                        m_touchX, m_touchY, 0, 0))
-                    moveship = true;
-                else
-                    moveship = false;
-                  */
-
-                if(moveship == false) {
+                Vector2 m_touch = new Vector2(event.getX(), event.getY());
+                Vector2 tempLeft = new Vector2(LeftButton.GetPosition());
+                tempLeft.x += LeftButton.GetButtonSize() / 2;
+                tempLeft.y += LeftButton.GetButtonSize() / 2;
+                if(tempLeft.Subtract(m_touch).GetLength() < LeftButton.GetButtonSize() / 2)
+                {
                     if(vibrator.hasVibrator())
                     {
                         vibrator.vibrate(100);
                     }
-                    moveship = true;
-                    touchPoint.x = (short) event.getX();
-                    touchPoint.y = (short) event.getY();
-                }else if(moveship == true)
-                {
-                    holdPoint.x = (short) event.getX();
-                    holdPoint.y = (short) event.getY();
+                    LeftButton.SetPressed(true);
                 }
-            case MotionEvent.ACTION_MOVE:
-
-                if (moveship == true)
+                Vector2 tempRight = new Vector2(RightButton.GetPosition());
+                tempRight.x += RightButton.GetButtonSize() / 2;
+                tempRight.y += RightButton.GetButtonSize() / 2;
+                if(tempRight.Subtract(m_touch).GetLength() < RightButton.GetButtonSize() / 2)
                 {
-                    //mX = (short) (m_touchX - ship[shipindex].getWidth() / 2);
-                    //mY = (short) (m_touchY - ship[shipindex].getHeight() / 2);
-
-                    /*// Check Collision with coin
-                    if (CheckCollision(
-                            mX, mY, ship[shipindex].getWidth() / 2, ship[shipindex].getHeight() / 2,
-                            coinX, coinY, flyincoins.getSpriteWidth() / 2, flyincoins.getSpriteHeight() / 2))
+                    if(vibrator.hasVibrator())
                     {
-                        Random randomNum = new Random();
-                        coinX = randomNum.nextInt(Screenwidth);
-                        coinY = randomNum.nextInt(Screenheight);
+                        vibrator.vibrate(100);
                     }
-                    */
-                    holdPoint.x = (short) event.getX();
-                    holdPoint.y = (short) event.getY();
+                    RightButton.SetPressed(true);
+                }
+                Vector2 tempAttack = new Vector2(AttackButton.GetPosition());
+                tempAttack.x += AttackButton.GetButtonSize() / 2;
+                tempAttack.y += AttackButton.GetButtonSize() / 2;
+                if(tempAttack.Subtract(m_touch).GetLength() < AttackButton.GetButtonSize() / 2)
+                {
+                    if(vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    AttackButton.SetPressed(true);
+                }
+                Vector2 tempJump = new Vector2(JumpButton.GetPosition());
+                tempJump.x += JumpButton.GetButtonSize() / 2;
+                tempJump.y += JumpButton.GetButtonSize() / 2;
+                if(tempJump.Subtract(m_touch).GetLength() < JumpButton.GetButtonSize() / 2)
+                {
+                    if(vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    JumpButton.SetPressed(true);
+                }
+
+            case MotionEvent.ACTION_POINTER_DOWN:
+                boolean leftbutton = false;
+                boolean rightbutton = false;
+                boolean jumpbutton = false;
+                boolean attackbutton = false;
+
+                for(int idx = 0; idx < event.getPointerCount(); idx++)
+                {
+                    int pointerID = event.findPointerIndex(idx);
+                    if(pointerID < 0)
+                        continue;
+                    Vector2 touch = new Vector2(event.getX(pointerID), event.getY(pointerID));
+                    tempJump = new Vector2(JumpButton.GetPosition());
+                    tempJump.x += JumpButton.GetButtonSize() / 2;
+                    tempJump.y += JumpButton.GetButtonSize() / 2;
+                    if (tempJump.Subtract(touch).GetLength() < JumpButton.GetButtonSize() / 2) {
+                        if (jumpbutton == false) {
+                            jumpbutton = true;
+                            continue;
+                        }
+                    }
+
+                    tempAttack = new Vector2(AttackButton.GetPosition());
+                    tempAttack.x += AttackButton.GetButtonSize() / 2;
+                    tempAttack.y += AttackButton.GetButtonSize() / 2;
+                    if (tempAttack.Subtract(touch).GetLength() < AttackButton.GetButtonSize() / 2) {
+                        if (attackbutton == false) {
+                            attackbutton = true;
+                            continue;
+                            }
+                    }
+
+                    tempRight = new Vector2(RightButton.GetPosition());
+                    tempRight.x += RightButton.GetButtonSize() / 2;
+                    tempRight.y += RightButton.GetButtonSize() / 2;
+                    if(tempRight.Subtract(touch).GetLength() < RightButton.GetButtonSize() / 2)
+                    {
+                        if(rightbutton == false)
+                        {
+                            rightbutton = true;
+                            continue;
+                        }
+                    }
+
+                    tempLeft = new Vector2(LeftButton.GetPosition());
+                    tempLeft.x += LeftButton.GetButtonSize() / 2;
+                    tempLeft.y += LeftButton.GetButtonSize() / 2;
+                    if (tempLeft.Subtract(touch).GetLength() < LeftButton.GetButtonSize() / 2) {
+                        if (leftbutton == false) {
+                            leftbutton = true;
+                            continue;
+                        }
+                    }
+
+                }
+                if(leftbutton && !LeftButton.isPressed())
+                {
+                    LeftButton.SetPressed(true);
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    //Log.v("APD", "Left Button Pressed");
+                }else if(!leftbutton)
+                {
+                    LeftButton.SetPressed(false);
+                }
+                if(rightbutton && !RightButton.isPressed())
+                {
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    RightButton.SetPressed(true);
+                    //Log.v("APD", "Right Button Pressed");
+                }else if(!rightbutton)
+                {
+                    RightButton.SetPressed(false);
+                }
+                if(attackbutton && !AttackButton.isPressed())
+                {
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    AttackButton.SetPressed(true);
+                    //Log.v("APD", "Right Button Pressed");
+                }else if(!attackbutton)
+                {
+                    AttackButton.SetPressed(false);
+                }
+                if(jumpbutton && !JumpButton.isPressed())
+                {
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    JumpButton.SetPressed(true);
+                    //Log.v("APD", "Right Button Pressed");
+                }else if(!jumpbutton)
+                {
+                    JumpButton.SetPressed(false);
                 }
                 break;
+
+            case MotionEvent.ACTION_MOVE:
+                leftbutton = false;
+                rightbutton = false;
+                jumpbutton = false;
+                attackbutton = false;
+
+                for(int idx = 0; idx < event.getPointerCount(); idx++)
+                {
+                    int pointerID = event.findPointerIndex(idx);
+                    if(pointerID < 0)
+                        continue;
+                    Vector2 touch = new Vector2(event.getX(pointerID), event.getY(pointerID));
+                    tempJump = new Vector2(JumpButton.GetPosition());
+                    tempJump.x += JumpButton.GetButtonSize() / 2;
+                    tempJump.y += JumpButton.GetButtonSize() / 2;
+                    if (tempJump.Subtract(touch).GetLength() < JumpButton.GetButtonSize() / 2) {
+                        if (jumpbutton == false) {
+                            jumpbutton = true;
+                            continue;
+                        }
+                    }
+
+                    tempAttack = new Vector2(AttackButton.GetPosition());
+                    tempAttack.x += AttackButton.GetButtonSize() / 2;
+                    tempAttack.y += AttackButton.GetButtonSize() / 2;
+                    if (tempAttack.Subtract(touch).GetLength() < AttackButton.GetButtonSize() / 2) {
+                        if (attackbutton == false) {
+                            attackbutton = true;
+                            continue;
+                        }
+                    }
+
+                    tempRight = new Vector2(RightButton.GetPosition());
+                    tempRight.x += RightButton.GetButtonSize() / 2;
+                    tempRight.y += RightButton.GetButtonSize() / 2;
+                    if(tempRight.Subtract(touch).GetLength() < RightButton.GetButtonSize() / 2)
+                    {
+                        if(rightbutton == false)
+                        {
+                            rightbutton = true;
+                            continue;
+                        }
+                    }
+
+                    tempLeft = new Vector2(LeftButton.GetPosition());
+                    tempLeft.x += LeftButton.GetButtonSize() / 2;
+                    tempLeft.y += LeftButton.GetButtonSize() / 2;
+                    if (tempLeft.Subtract(touch).GetLength() < LeftButton.GetButtonSize() / 2) {
+                        if (leftbutton == false) {
+                            leftbutton = true;
+                            continue;
+                        }
+                    }
+
+                }
+                if(leftbutton && !LeftButton.isPressed())
+                {
+                    LeftButton.SetPressed(true);
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    //Log.v("APD", "Left Button Pressed");
+                }else if(!leftbutton)
+                {
+                    LeftButton.SetPressed(false);
+                }
+                if(rightbutton && !RightButton.isPressed())
+                {
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    RightButton.SetPressed(true);
+                    //Log.v("APD", "Right Button Pressed");
+                }else if(!rightbutton)
+                {
+                    RightButton.SetPressed(false);
+                }
+                if(attackbutton && !AttackButton.isPressed())
+                {
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    AttackButton.SetPressed(true);
+                    //Log.v("APD", "Right Button Pressed");
+                }else if(!attackbutton)
+                {
+                    AttackButton.SetPressed(false);
+                }
+                if(jumpbutton && !JumpButton.isPressed())
+                {
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(100);
+                    }
+                    JumpButton.SetPressed(true);
+                    //Log.v("APD", "Right Button Pressed");
+                }else if(!jumpbutton)
+                {
+                    JumpButton.SetPressed(false);
+                }
+                break;
+            case MotionEvent.ACTION_POINTER_UP:
+                //test = false;
+                break;
             case MotionEvent.ACTION_UP:
+                test = false;
                 moveship = false;
+                RightButton.SetPressed(false);
+                LeftButton.SetPressed(false);
+                AttackButton.SetPressed(false);
+                JumpButton.SetPressed(false);
                 break;
         }
 

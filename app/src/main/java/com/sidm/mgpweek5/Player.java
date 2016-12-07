@@ -27,11 +27,12 @@ public class Player {
     private Vector2 position;
     private PLAYER_STATE state;
     private int hp;
-
+    private final int SPEED = 600;
     // put the sprites here
 
     // Constructor
     public Player() {
+        position = new Vector2();
         position.SetZero();
         state = PLAYER_STATE.IDLE;
         hp = 100;
@@ -58,6 +59,16 @@ public class Player {
     // Movement
     public void Move() {
 
+    }
+
+    public void MoveLeft(float deltaTime)
+    {
+        position.x -= deltaTime * SPEED;
+    }
+
+    public void MoveRight(float deltaTime)
+    {
+        position.x += deltaTime * SPEED;
     }
 
     public void Jump() {
