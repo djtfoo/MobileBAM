@@ -22,12 +22,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private Gamethread myThread = null; // Thread to control the rendering
     private Vibrator vibrator = (Vibrator)this.getContext().getSystemService(Context.VIBRATOR_SERVICE);
 
-    // Sprite animations
-    private Spriteanimation flyincoins;
-    private int coinX = 300, coinY = 300;
-
-    protected boolean moveship = false;
-
     // 1a) Variables used for background rendering
     private Bitmap bg, scaledbg;    // bg = background; scaledbg = scaled version of bg
     // 1b) Define Screen width and Screen height as integer
@@ -44,9 +38,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public float FPS;
     float deltaTime;
 
-    short m_touchX;
-    short m_touchY;
-
     Vector2 pos = new Vector2();
     Tilemap map = new Tilemap();
     Player player = new Player();
@@ -56,7 +47,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     GUIbutton LeftButton;
     GUIbutton JumpButton;
     GUIbutton AttackButton;
-    boolean test;
+    GUIbutton primaryButton;
+
     // Variable for Game State check
     private short GameState;
 
@@ -90,13 +82,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         InitButtons();
         //Point1 = new TouchPoint();
-        test = false;
-
-        // Load the sprite sheet
-        flyincoins = new Spriteanimation(Bitmap.createScaledBitmap
-                (BitmapFactory.decodeResource
-                        (getResources(), R.drawable.flystar),
-                        Screenwidth / 4, Screenheight / 10, true), 320, 64, 5, 5);
 
         // Init player and entities
         player.Init(context, Screenwidth, Screenheight);
@@ -117,6 +102,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         LeftButton = new GUIbutton();
         AttackButton = new GUIbutton();
         JumpButton = new GUIbutton();
+        primaryButton = null;
 
         int buttonSize = (int)(0.7f * map.tileSize_Y * ((float)Screenwidth / (float)Screenheight));
 
@@ -222,13 +208,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawBitmap(scaledbg, bgX, bgY, null);    // 1st background image
         canvas.drawBitmap(scaledbg, bgX + Screenwidth, bgY, null);    // 2nd background image
 
-
-        // draw the stars
-        flyincoins.draw(canvas);
-
-        flyincoins.setX(coinX);
-        flyincoins.setY(coinY);
-
         // draw the boss enemy
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setX((int)bossdragon.GetPosition().x);
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setY((int)bossdragon.GetPosition().y);
@@ -248,8 +227,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         RenderTextOnScreen(canvas, "FPS " + FPS, (int)(1.5f * map.tileSize_X), (int)(0.8f * map.tileSize_Y), textSize);
         //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
         //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
-        if(test)
-        RenderTextOnScreen(canvas, "TEST", 130, 375, textSize);
+
         if(RightButton.isPressed()) {
             RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, textSize);
         }
@@ -261,9 +239,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
         if(JumpButton.isPressed()) {
             RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, textSize);
-        }
-        if (moveship){
-            RenderTextOnScreen(canvas, "TRIGGERED", 130, 125, 50);
         }
     }
 
@@ -284,19 +259,33 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
 
                 // make sprite animate
-                flyincoins.update(dt_l);
-
                 player.spriteArray[player.GetState().GetValue()].update(dt_l);
                 bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(dt_l);
 
-
+                // get key press
                 if(RightButton.isPressed())
                 {
-                    player.MoveRight(deltaTime);
+                    player.SetState(Player.PLAYER_STATE.MOVE);
+                    player.MoveRight(deltaTime, map);
                 }
                 else if(LeftButton.isPressed())
                 {
-                    player.MoveLeft(deltaTime);
+                    player.SetState(Player.PLAYER_STATE.MOVE);
+                    player.MoveLeft(deltaTime, map);
+                }
+                else {
+                    player.SetState(Player.PLAYER_STATE.IDLE);
+                }
+
+                if (JumpButton.isPressed()) {
+                    player.Jump();
+                }
+
+                // update player movement
+                player.CheckIsInAir(map);
+                if (player.IsInAir()) {
+                    player.SetState(Player.PLAYER_STATE.JUMP);
+                    player.UpdateJump(deltaTime, map);
                 }
             }
             break;
@@ -358,7 +347,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //int touch_2 = event.getPointerId(1);
 
         int action = event.getAction(); // Check for the action of touch
-
         switch(action) {
 
             case MotionEvent.ACTION_DOWN:
@@ -371,9 +359,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if(vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     LeftButton.SetPressed(true);
+                    primaryButton = LeftButton;
+                    Log.v("Primary Button", "Left Button");
                 }
                 Vector2 tempRight = new Vector2(RightButton.GetPosition());
                 tempRight.x += RightButton.GetButtonSize() / 2;
@@ -382,9 +372,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if(vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     RightButton.SetPressed(true);
+                    primaryButton = RightButton;
+                    Log.v("Primary Button", "Right Button");
                 }
                 Vector2 tempAttack = new Vector2(AttackButton.GetPosition());
                 tempAttack.x += AttackButton.GetButtonSize() / 2;
@@ -393,9 +385,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if(vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     AttackButton.SetPressed(true);
+                    primaryButton = AttackButton;
+                    Log.v("Primary Button", "Attack Button");
                 }
                 Vector2 tempJump = new Vector2(JumpButton.GetPosition());
                 tempJump.x += JumpButton.GetButtonSize() / 2;
@@ -404,11 +398,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if(vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     JumpButton.SetPressed(true);
+                    primaryButton = JumpButton;
+                    Log.v("Primary Button", "Jump Button");
                 }
-
+                break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 //Log.v("DEBUG:","ACTION_POINTER_DOWN");
                 boolean leftbutton = false;
@@ -470,7 +466,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     LeftButton.SetPressed(true);
                     if (vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     //Log.v("APD", "Left Button Pressed");
                 }else if(!leftbutton)
@@ -481,7 +477,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if (vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     RightButton.SetPressed(true);
                     //Log.v("APD", "Right Button Pressed");
@@ -493,7 +489,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if (vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     AttackButton.SetPressed(true);
                     //Log.v("APD", "Right Button Pressed");
@@ -505,7 +501,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if (vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     JumpButton.SetPressed(true);
                     //Log.v("APD", "Right Button Pressed");
@@ -576,7 +572,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     LeftButton.SetPressed(true);
                     if (vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     //Log.v("APD", "Left Button Pressed");
                 }else if(!leftbutton)
@@ -587,7 +583,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if (vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     RightButton.SetPressed(true);
                     //Log.v("APD", "Right Button Pressed");
@@ -599,7 +595,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if (vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     AttackButton.SetPressed(true);
                     //Log.v("APD", "Right Button Pressed");
@@ -611,7 +607,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if (vibrator.hasVibrator())
                     {
-                        vibrator.vibrate(100);
+                        vibrator.vibrate(50);
                     }
                     JumpButton.SetPressed(true);
                     //Log.v("APD", "Right Button Pressed");
@@ -625,12 +621,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 break;
             case MotionEvent.ACTION_UP:
                 //Log.v("DEBUG:","ACTION_UP");
-                test = false;
-                moveship = false;
-                RightButton.SetPressed(false);
-                LeftButton.SetPressed(false);
-                AttackButton.SetPressed(false);
-                JumpButton.SetPressed(false);
+                if(primaryButton != null)
+                {
+                    primaryButton.SetPressed(false);
+                    primaryButton = null;
+                }
+                //RightButton.SetPressed(false);
+                //LeftButton.SetPressed(false);
+                //AttackButton.SetPressed(false);
+                //JumpButton.SetPressed(false);
                 break;
         }
 

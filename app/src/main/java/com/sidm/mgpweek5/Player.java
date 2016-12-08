@@ -33,7 +33,13 @@ public class Player {
     private Vector2 position = new Vector2();
     private PLAYER_STATE state;
     private int hp;
+
+    // for movement
     private final int SPEED = 600;
+    // jump
+    private boolean isInAir = false;
+    private float jumpSpeed = 0.f;
+    private final float gravity = 500.f;
 
     // Sprite animation
     public Spriteanimation[] spriteArray;
@@ -105,23 +111,114 @@ public class Player {
 
     }
 
+    // Check collision
+    public boolean CheckCollisionLeftRight(Tilemap map, int X, int Y)
+    {
+        if (map.tilemap[Y][X] == 1)
+        {
+            return true;
+        }
+        if (isInAir && map.tilemap[Y + 1][X] == 1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public boolean CheckCollisionUpDown(Tilemap map, int X, int Y) {
+        if (map.tilemap[Y][X - 1] == 1 || map.tilemap[Y][X] == 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     // Movement
-    public void Move() {
+    public void MoveLeft(float deltaTime, Tilemap map)
+    {
+        float newPosX = position.x - deltaTime * SPEED;
+        int X = (int)((newPosX - map.tileSize_X) / map.tileSize_X);
+        int Y = (int)(position.y / map.tileSize_Y);
+
+        if (!CheckCollisionLeftRight(map, X, Y)) {
+            position.x = newPosX;
+        }
 
     }
 
-    public void MoveLeft(float deltaTime)
+    public void MoveRight(float deltaTime, Tilemap map)
     {
-        position.x -= deltaTime * SPEED;
+        float newPosX = position.x + deltaTime * SPEED;
+        int X = (int)(newPosX / map.tileSize_X);
+        int Y = (int)(position.y / map.tileSize_Y);
+
+        if (!CheckCollisionLeftRight(map, X, Y)) {
+            position.x = newPosX;
+        }
     }
 
-    public void MoveRight(float deltaTime)
-    {
-        position.x += deltaTime * SPEED;
+    // Jump
+    public void CheckIsInAir(Tilemap map) {
+        int X = (int)(position.x / map.tileSize_X);
+        int Y = (int)((position.y + map.tileSize_Y) / map.tileSize_Y);
+
+        if (!CheckCollisionUpDown(map, X, Y)) {
+            isInAir = true;
+        }
+    }
+
+    public boolean IsInAir() {
+        return isInAir;
     }
 
     public void Jump() {
+        if (!isInAir)
+        {
+            isInAir = true;
+            jumpSpeed = -600.f;
+        }
+    }
 
+    public void UpdateJump(float deltaTime, Tilemap map) {
+        jumpSpeed += gravity * deltaTime;
+
+        if (jumpSpeed <= 0.f) {
+            UpdateJumpUpwards(deltaTime, map);
+        }
+        else {
+            UpdateFreefall(deltaTime, map);
+        }
+    }
+
+    public void UpdateJumpUpwards(float deltaTime, Tilemap map) {
+        float newPosY = position.y + jumpSpeed * deltaTime;
+
+        int X = (int)(position.x / map.tileSize_X);
+        int Y = (int)((newPosY - map.tileSize_Y) / map.tileSize_Y);
+
+        if (CheckCollisionUpDown(map, X, Y)) {
+            jumpSpeed = 0.f;
+        }
+        else {   // move
+            position.y = newPosY;
+        }
+    }
+
+    public void UpdateFreefall(float deltaTime, Tilemap map) {
+        float newPosY = position.y + jumpSpeed * deltaTime;
+
+        int X = (int)(position.x / map.tileSize_X);
+        int Y = (int)((newPosY + map.tileSize_Y) / map.tileSize_Y);
+
+        if (CheckCollisionUpDown(map, X, Y)) {
+            jumpSpeed = 0.f;
+            isInAir = false;
+            position.y = (Y - 1) * map.tileSize_Y;
+        }
+        else {  // move
+            position.y = newPosY;
+        }
     }
 
     // HP
@@ -150,6 +247,10 @@ public class Player {
     // State
     public PLAYER_STATE GetState() {
         return state;
+    }
+
+    public void SetState(PLAYER_STATE state) {
+        this.state = state;
     }
 
     // Attack
