@@ -35,8 +35,6 @@ public class Bossdragon extends Entity {
     }
 
     public void Init(Context context, int screenWidth, int screenHeight) {
-        SetPosition(screenWidth / 2, screenHeight / 7 * 4);
-
         spriteArray[Bossdragon.BOSSDRAGON_STATE.IDLE.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.dragon_idle),

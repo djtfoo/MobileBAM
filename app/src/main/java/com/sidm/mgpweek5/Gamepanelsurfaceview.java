@@ -21,6 +21,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     private Gamethread myThread = null; // Thread to control the rendering
     private Vibrator vibrator = (Vibrator)this.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+
     // Sprite animations
     private Spriteanimation flyincoins;
     private int coinX = 300, coinY = 300;
@@ -37,20 +38,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     // Used for tilemap rendering
     private Bitmap tile_ground;
-
-    // 4a) bitmap array to stores 4 images of the spaceship
-    private Bitmap[] ship = new Bitmap[4];
-
-    // 4b) Variable as an index to keep track of the spaceship images
-    private short shipindex = 0;
-
-    // 2 more variables to place my ship where it will be based on touch of screen
-    private short mX = 200, mY = 200;
+    int textSize;
 
     // Variables for FPS
     public float FPS;
     float deltaTime;
-    long dt;
+
     short m_touchX;
     short m_touchY;
 
@@ -93,6 +86,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         tile_ground = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tile_ground),
                 (int)(map.tileSize_X), (int)(map.tileSize_Y), true);
 
+        textSize = (int)(0.3 * map.tileSize_X * ((float)Screenwidth / (float)Screenheight));
+
         InitButtons();
         //Point1 = new TouchPoint();
         test = false;
@@ -105,7 +100,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Init player and entities
         player.Init(context, Screenwidth, Screenheight);
+        player.SetPosition(2 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
         bossdragon.Init(context, Screenwidth, Screenheight);
+        bossdragon.SetPosition(Screenwidth / 2, Screenheight / 7 * 4);
 
         // Create the game loop thread
         myThread = new Gamethread(getHolder(), this);
@@ -121,17 +118,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         AttackButton = new GUIbutton();
         JumpButton = new GUIbutton();
 
-        int buttonSize = (int)(112 * ((float)Screenwidth / (float)Screenheight));
+        int buttonSize = (int)(0.7f * map.tileSize_Y * ((float)Screenwidth / (float)Screenheight));
 
         RightButton.SetButtonSize(buttonSize);
         LeftButton.SetButtonSize(buttonSize);
         JumpButton.SetButtonSize(buttonSize);
         AttackButton.SetButtonSize((int)(buttonSize * 1.45));
 
-        LeftButton.SetButtonPos((int)(Screenwidth * 0.0625), (int)(Screenheight * 0.74));
-        RightButton.SetButtonPos((int)(Screenwidth * 0.0625) + (int)(Screenwidth * 0.02) + buttonSize, (int)(Screenheight * 0.74));
-        JumpButton.SetButtonPos((int)(Screenwidth * 0.664), (int)(Screenheight * 0.74));
-        AttackButton.SetButtonPos((int)(Screenwidth * 0.789), (int)(Screenheight * 0.657));
+        LeftButton.SetButtonPos((int)(map.tileSize_X), (int)(7.8f * map.tileSize_Y));
+        RightButton.SetButtonPos((int)(map.tileSize_X) + (int)(Screenwidth * 0.02) + buttonSize, (int)(7.8f * map.tileSize_Y));
+        JumpButton.SetButtonPos((int)(12.5f * map.tileSize_X), (int)(7.8f * map.tileSize_Y));
+        AttackButton.SetButtonPos((int)(14.f * map.tileSize_X), (int)(7.3f * map.tileSize_Y));
 
         LeftButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton));
         RightButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton));
@@ -225,8 +222,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawBitmap(scaledbg, bgX, bgY, null);    // 1st background image
         canvas.drawBitmap(scaledbg, bgX + Screenwidth, bgY, null);    // 2nd background image
 
-        RenderButtons(canvas);
-        // location of the ship is based on touch
 
         // draw the stars
         flyincoins.draw(canvas);
@@ -247,23 +242,25 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         player.spriteArray[player.GetState().GetValue()].setY((int)player.GetPosition().y);
         player.spriteArray[player.GetState().GetValue()].draw(canvas);
 
-        // Bonus) To print FPS on the screen
-        RenderTextOnScreen(canvas, "FPS " + FPS, 130, 75, 50);
+        RenderButtons(canvas);
+
+        // Debug text
+        RenderTextOnScreen(canvas, "FPS " + FPS, (int)(1.5f * map.tileSize_X), (int)(0.8f * map.tileSize_Y), textSize);
         //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
         //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
         if(test)
-        RenderTextOnScreen(canvas, "TEST", 130, 375, 50);
+        RenderTextOnScreen(canvas, "TEST", 130, 375, textSize);
         if(RightButton.isPressed()) {
-            RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, 50);
+            RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, textSize);
         }
         if(LeftButton.isPressed()) {
-            RenderTextOnScreen(canvas, "Left Button Pressed", 130, 325, 50);
+            RenderTextOnScreen(canvas, "Left Button Pressed", 130, 325, textSize);
         }
         if(AttackButton.isPressed()) {
-            RenderTextOnScreen(canvas, "Attack Button Pressed", 130, 375, 50);
+            RenderTextOnScreen(canvas, "Attack Button Pressed", 130, 375, textSize);
         }
         if(JumpButton.isPressed()) {
-            RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, 50);
+            RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, textSize);
         }
         if (moveship){
             RenderTextOnScreen(canvas, "TRIGGERED", 130, 125, 50);
@@ -281,7 +278,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         switch (GameState) {
             case 0: {
                 // 3) Update the background to allow panning effect
-                bgX -= 200 * dt;    // temp value to speed the panning
+                bgX -= 200 * deltaTime;      // temp value to speed the panning
                 if (bgX < -Screenwidth) {
                     bgX = 0;
                 }
@@ -365,6 +362,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         switch(action) {
 
             case MotionEvent.ACTION_DOWN:
+                //Log.v("DEBUG:","ACTION_DOWN");
                 Vector2 m_touch = new Vector2(event.getX(), event.getY());
                 Vector2 tempLeft = new Vector2(LeftButton.GetPosition());
                 tempLeft.x += LeftButton.GetButtonSize() / 2;
@@ -412,6 +410,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
 
             case MotionEvent.ACTION_POINTER_DOWN:
+                //Log.v("DEBUG:","ACTION_POINTER_DOWN");
                 boolean leftbutton = false;
                 boolean rightbutton = false;
                 boolean jumpbutton = false;
@@ -517,6 +516,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 break;
 
             case MotionEvent.ACTION_MOVE:
+                //Log.v("DEBUG:","ACTION_MOVE");
                 leftbutton = false;
                 rightbutton = false;
                 jumpbutton = false;
@@ -624,6 +624,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 //test = false;
                 break;
             case MotionEvent.ACTION_UP:
+                //Log.v("DEBUG:","ACTION_UP");
                 test = false;
                 moveship = false;
                 RightButton.SetPressed(false);

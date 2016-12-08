@@ -3,6 +3,7 @@ package com.sidm.mgpweek5;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Vibrator;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -17,12 +18,15 @@ public class Worldmappage extends Activity implements View.OnClickListener {
     private Button btn_back3;
     private Button btn_boss1;
 
+    private Vibrator vibrator;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);  // hide the title
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
+        vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
 
         setContentView(R.layout.worldmappage);
 
@@ -37,11 +41,15 @@ public class Worldmappage extends Activity implements View.OnClickListener {
         Intent intent = new Intent();
         if (v == btn_back3)
         {
+            if (vibrator.hasVibrator())
+                vibrator.vibrate(50);
             intent.setClass(this, Mainmenu.class);
         }
 
         if (v == btn_boss1)
         {
+            if (vibrator.hasVibrator())
+                vibrator.vibrate(50);
             intent.setClass(this, Gamepage.class);
         }
 

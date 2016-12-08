@@ -56,7 +56,7 @@
         </activity>
 
         <activity android:name=".Gamepage"
-            android:screenOrientation="reverseLandscape">
+            android:screenOrientation="landscape">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
