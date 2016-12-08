@@ -1,8 +1,10 @@
 package com.sidm.mgpweek5;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Bundle;
 import android.content.Intent;
+import android.os.Vibrator;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.View;

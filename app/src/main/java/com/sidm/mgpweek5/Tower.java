@@ -6,7 +6,7 @@ package com.sidm.mgpweek5;
 
 public class Tower {
 
-    private Vector2 position;
+    private Vector2 position = new Vector2();
     private int hp;
 
     // Constructor

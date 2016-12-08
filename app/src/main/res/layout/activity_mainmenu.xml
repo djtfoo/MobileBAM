@@ -35,18 +35,6 @@
         android:layout_centerHorizontal="true" />
 
     <TextView
-        android:id="@+id/subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="BIG APOCALYPTIC MONSTERS"
-        android:textSize="12dp"
-        android:fontFamily="sans-serif-black"
-        android:textColor="#02004F"
-        android:layout_marginTop="37dp"
-        android:layout_below="@+id/btn_options"
-        android:layout_centerHorizontal="true" />
-
-    <TextView
         android:id="@+id/maintitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -69,5 +57,16 @@
         android:textColor="#02004F"
         android:layout_centerVertical="true"
         android:layout_alignStart="@+id/btn_help" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BIG APOCALYPTIC MONSTERS"
+        android:textSize="10dp"
+        android:fontFamily="sans-serif-black"
+        android:textColor="#02004F"
+        android:layout_alignBottom="@+id/maintitle"
+        android:layout_centerHorizontal="true" />
 
 </RelativeLayout>

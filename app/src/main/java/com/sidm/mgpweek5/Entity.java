@@ -6,26 +6,14 @@ package com.sidm.mgpweek5;
 
 public class Entity {
 
-    public enum ENTITY_STATE {
-
-        IDLE(0);
-        //DAMAGED(1);
-
-        private int value;
-
-        ENTITY_STATE(int value) { this.value = value; }
-        public int GetValue() { return value; }
-
-    }
-
-    private Vector2 position;
-    private ENTITY_STATE state;
+    private Vector2 position = new Vector2();
     private int hp;
+    // Sprite animation
+    public Spriteanimation[] spriteArray;
 
     // Constructor
-    Entity() {
+    protected Entity(int hp) {
         position.SetZero();
-        state = ENTITY_STATE.IDLE;
         hp = 1000;
     }
 
@@ -55,6 +43,8 @@ public class Entity {
 
     public void TakeDamage(int damage) {
         SetHP(hp - damage);
+        if (this.hp < 0)
+            this.hp = 0;
     }
 
     public boolean IsDead() {
@@ -67,11 +57,6 @@ public class Entity {
     // Update
     public void Update() {
 
-    }
-
-    // state
-    public ENTITY_STATE GetState() {
-        return state;
     }
 
 }

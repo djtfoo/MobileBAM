@@ -97,7 +97,7 @@ public class Spriteanimation {
     }
 
     public void setX(int x) {
-        this.x = x;
+        this.x = x - spriteWidth / 2;
     }
 
     public int getY() {
@@ -105,7 +105,7 @@ public class Spriteanimation {
     }
 
     public void setY(int y) {
-        this.y = y;
+        this.y = y - spriteHeight / 2;
     }
 
     public void update(long gameTime) {

@@ -35,6 +35,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // 1c) Variables for defining background start and end point
     private short bgX = 0, bgY = 0;
 
+    // Used for tilemap rendering
+    private Bitmap tile_ground;
+
     // 4a) bitmap array to stores 4 images of the spaceship
     private Bitmap[] ship = new Bitmap[4];
 
@@ -54,6 +57,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     Vector2 pos = new Vector2();
     Tilemap map = new Tilemap();
     Player player = new Player();
+    Bossdragon bossdragon = new Bossdragon();
+
     GUIbutton RightButton;
     GUIbutton LeftButton;
     GUIbutton JumpButton;
@@ -61,6 +66,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     boolean test;
     // Variable for Game State check
     private short GameState;
+
     //constructor for this GamePanelSurfaceView class
     public Gamepanelsurfaceview (Context context){
 
@@ -75,27 +81,21 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         Screenwidth = metrics.widthPixels;
         Screenheight = metrics.heightPixels;
 
+        // Init tilemap
+        map.Init(context, "MapTest.csv");
+        map.tileSize_X = Screenwidth / map.GetCols();
+        map.tileSize_Y = Screenheight / map.GetRows();
+
         // 1e)load the image when this class is being instantiated
         bg = BitmapFactory.decodeResource(getResources(), R.drawable.boss1_scene);
         scaledbg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
 
+        tile_ground = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tile_ground),
+                (int)(map.tileSize_X), (int)(map.tileSize_Y), true);
+
         InitButtons();
         //Point1 = new TouchPoint();
         test = false;
-        // 4c) Load the images of the spaceships
-        //ship[0] = BitmapFactory.decodeResource(getResources(), R.drawable.ship2_1);
-        //ship[1] = BitmapFactory.decodeResource(getResources(), R.drawable.ship2_2);
-        //ship[2] = BitmapFactory.decodeResource(getResources(), R.drawable.ship2_3);
-        //ship[3] = BitmapFactory.decodeResource(getResources(), R.drawable.ship2_4);
-
-        ship[0] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_1),
-                (int)(Screenwidth / 10), (int)(Screenheight / 10), true);
-        ship[1] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_2),
-                (int)(Screenwidth / 10), (int)(Screenheight / 10), true);
-        ship[2] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_3),
-                (int)(Screenwidth / 10), (int)(Screenheight / 10), true);
-        ship[3] = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.ship2_4),
-                (int)(Screenwidth / 10), (int)(Screenheight / 10), true);
 
         // Load the sprite sheet
         flyincoins = new Spriteanimation(Bitmap.createScaledBitmap
@@ -103,9 +103,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         (getResources(), R.drawable.flystar),
                         Screenwidth / 4, Screenheight / 10, true), 320, 64, 5, 5);
 
-        map.Init("assets/MapTest.csv");
-        map.tileSize_X = 120;
-        map.tileSize_Y = 120;
+        // Init player and entities
+        player.Init(context, Screenwidth, Screenheight);
+        bossdragon.Init(context, Screenwidth, Screenheight);
+
         // Create the game loop thread
         myThread = new Gamethread(getHolder(), this);
 
@@ -205,6 +206,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     }
 
+    public void drawTilemap(Canvas canvas) {
+        for (int y = 0; y < map.GetRows(); ++y) {
+            for (int x = 0; x < map.GetCols(); ++x) {
+                if (map.tilemap[y][x] == 1) {
+                    canvas.drawBitmap(tile_ground, x * map.tileSize_X, y * map.tileSize_Y, null);
+                }
+            }
+        }
+    }
+
     public void RenderGameplay(Canvas canvas) {
         // 2) Re-draw 2nd image after the 1st image ends
         if (canvas == null) {
@@ -213,9 +224,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         canvas.drawBitmap(scaledbg, bgX, bgY, null);    // 1st background image
         canvas.drawBitmap(scaledbg, bgX + Screenwidth, bgY, null);    // 2nd background image
-
-        // 4d) Draw the spaceships
-        canvas.drawBitmap(ship[shipindex], player.GetPosition().x, player.GetPosition().y, null);
 
         RenderButtons(canvas);
         // location of the ship is based on touch
@@ -226,7 +234,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         flyincoins.setX(coinX);
         flyincoins.setY(coinY);
 
+        // draw the boss enemy
+        bossdragon.spriteArray[bossdragon.GetState().GetValue()].setX((int)bossdragon.GetPosition().x);
+        bossdragon.spriteArray[bossdragon.GetState().GetValue()].setY((int)bossdragon.GetPosition().y);
+        bossdragon.spriteArray[bossdragon.GetState().GetValue()].draw(canvas);
 
+        // draw the tilemap
+        drawTilemap(canvas);
+
+        // draw the player
+        player.spriteArray[player.GetState().GetValue()].setX((int)player.GetPosition().x);
+        player.spriteArray[player.GetState().GetValue()].setY((int)player.GetPosition().y);
+        player.spriteArray[player.GetState().GetValue()].draw(canvas);
 
         // Bonus) To print FPS on the screen
         RenderTextOnScreen(canvas, "FPS " + FPS, 130, 75, 50);
@@ -256,20 +275,23 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public void update(float dt, float fps){
         FPS = fps;
         this.deltaTime = dt;
+
+        long dt_l = System.currentTimeMillis();
+
         switch (GameState) {
             case 0: {
                 // 3) Update the background to allow panning effect
-                bgX -= 500 * dt;    // temp value to speed the panning
+                bgX -= 200 * dt;    // temp value to speed the panning
                 if (bgX < -Screenwidth) {
                     bgX = 0;
                 }
 
-                // 4e) Update the spaceship images / shipIndex so that the animation will occur.
-                ++shipindex;
-                shipindex %= 3;
-
                 // make sprite animate
-                flyincoins.update(System.currentTimeMillis());
+                flyincoins.update(dt_l);
+
+                player.spriteArray[player.GetState().GetValue()].update(dt_l);
+                bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(dt_l);
+
 
                 if(RightButton.isPressed())
                 {

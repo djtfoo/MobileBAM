@@ -6,8 +6,8 @@ package com.sidm.mgpweek5;
 
 public class Projectile {
 
-    private Vector2 position;
-    private Vector2 velocity;
+    private Vector2 position = new Vector2();
+    private Vector2 velocity = new Vector2();
 
     private double lifespan;
 
