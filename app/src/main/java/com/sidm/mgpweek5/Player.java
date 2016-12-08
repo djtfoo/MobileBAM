@@ -33,6 +33,7 @@ public class Player {
     private Vector2 position = new Vector2();
     private PLAYER_STATE state;
     private int hp;
+    private final int maxHP = 100;
 
     // for movement
     private final int SPEED = 600;
@@ -48,7 +49,7 @@ public class Player {
     public Player() {
         position.SetZero();
         state = PLAYER_STATE.MOVE;
-        hp = 100;
+        hp = maxHP;
 
         spriteArray = new Spriteanimation[PLAYER_STATE.STATES_TOTAL.GetValue()];
     }

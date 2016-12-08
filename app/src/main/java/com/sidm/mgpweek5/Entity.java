@@ -6,8 +6,8 @@ package com.sidm.mgpweek5;
 
 public class Entity {
 
-    private Vector2 position = new Vector2();
-    private int hp;
+    protected Vector2 position = new Vector2();
+    protected int hp;
     // Sprite animation
     public Spriteanimation[] spriteArray;
 

@@ -4,7 +4,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Typeface;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -27,12 +29,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // 1b) Define Screen width and Screen height as integer
     int Screenwidth, Screenheight;
 
+    private Bitmap playerProfile, bossProfile;
+
     // 1c) Variables for defining background start and end point
     private short bgX = 0, bgY = 0;
 
     // Used for tilemap rendering
     private Bitmap tile_ground;
     int textSize;
+
+    // Fonts
+    Typeface font;
 
     // Variables for FPS
     public float FPS;
@@ -78,6 +85,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         tile_ground = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tile_ground),
                 (int)(map.tileSize_X), (int)(map.tileSize_Y), true);
 
+        playerProfile = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.player_profile),
+                (int)(map.tileSize_X), (int)(map.tileSize_X), true);
+        bossProfile = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.dragon_profile),
+                (int)(map.tileSize_X), (int)(map.tileSize_X), true);
+
         textSize = (int)(0.3 * map.tileSize_X * ((float)Screenwidth / (float)Screenheight));
 
         InitButtons();
@@ -94,6 +106,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Make the GamePanel focusable so it can handle events
         setFocusable(true);
+
+        // Font
+        font = Typeface.createFromAsset(getContext().getAssets(), "fonts/arial.ttf");
     }
 
     public void InitButtons()
@@ -113,8 +128,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         LeftButton.SetButtonPos((int)(map.tileSize_X), (int)(7.8f * map.tileSize_Y));
         RightButton.SetButtonPos((int)(map.tileSize_X) + (int)(Screenwidth * 0.02) + buttonSize, (int)(7.8f * map.tileSize_Y));
-        JumpButton.SetButtonPos((int)(12.5f * map.tileSize_X), (int)(7.8f * map.tileSize_Y));
-        AttackButton.SetButtonPos((int)(14.f * map.tileSize_X), (int)(7.3f * map.tileSize_Y));
+        JumpButton.SetButtonPos((int)((map.GetCols() - 3.5f) * map.tileSize_X), (int)(7.8f * map.tileSize_Y));
+        AttackButton.SetButtonPos((int)((map.GetCols() - 2) * map.tileSize_X), (int)(7.3f * map.tileSize_Y));
 
         LeftButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton));
         RightButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton));
@@ -199,6 +214,27 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
     }
 
+    public void RenderPlayerHealthBar(Canvas canvas) {
+        Paint paint = new Paint();
+
+        float boxWidth = Screenwidth / 3;
+        float boxHeight = Screenheight / 20;
+        float boxStroke = boxHeight / 10.f;
+
+        // box
+        paint.setColor(Color.LTGRAY);
+        paint.setStrokeWidth(10);
+        paint.setStyle(Paint.Style.FILL_AND_STROKE);
+        canvas.drawRect(Screenwidth / 20 + 5, Screenheight / 20 - 5, 4 * Screenwidth/20, 2 * Screenheight/25, paint);
+
+        int hpRatio = player.GetHP();
+
+        // Fill the rectangle
+        paint.setColor(Color.RED);
+        paint.setStyle(Paint.Style.FILL);
+        canvas.drawRect(Screenwidth/20 + 8, Screenheight / 20, 4 * Screenwidth/20, 2 * Screenheight/25, paint);
+    }
+
     public void RenderGameplay(Canvas canvas) {
         // 2) Re-draw 2nd image after the 1st image ends
         if (canvas == null) {
@@ -221,10 +257,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         player.spriteArray[player.GetState().GetValue()].setY((int)player.GetPosition().y);
         player.spriteArray[player.GetState().GetValue()].draw(canvas);
 
+        // HUD
         RenderButtons(canvas);
+        canvas.drawBitmap(playerProfile, 0.5f * map.tileSize_X, 0.5f * map.tileSize_Y, null);
+        RenderPlayerHealthBar(canvas);
+        canvas.drawBitmap(bossProfile, (map.GetCols() - 1.5f) * map.tileSize_X, 0.5f * map.tileSize_Y, null);
 
         // Debug text
-        RenderTextOnScreen(canvas, "FPS " + FPS, (int)(1.5f * map.tileSize_X), (int)(0.8f * map.tileSize_Y), textSize);
+        RenderTextOnScreen(canvas, "FPS " + FPS, (int)(1.5f * map.tileSize_X), (int)(0.4f * map.tileSize_Y), textSize);
         //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
         //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
 
@@ -309,6 +349,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         paint.setARGB(255, 255, 255, 255);
         paint.setStrokeWidth(100);
         paint.setTextSize(textsize);
+        paint.setTypeface(font);
 
         canvas.drawText(text, posX, posY, paint);
     }
