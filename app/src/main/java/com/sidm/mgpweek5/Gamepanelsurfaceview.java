@@ -1,18 +1,27 @@
 package com.sidm.mgpweek5;
 
+import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.text.InputFilter;
+import android.text.InputType;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.os.Vibrator;
+import android.widget.EditText;
+import android.widget.Toast;
 
 /**
  * Created by Foo on 24/11/2016.
@@ -41,6 +50,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Fonts
     Typeface font;
 
+    // init for start png
+    private Bitmap star;
+    int numstar = 3;
+
+    // Activity
+    Activity activityTracker;   // use to track and then launch to the desired activity
+
     // Variables for FPS
     public float FPS;
     float deltaTime;
@@ -54,13 +70,41 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     GUIbutton LeftButton;
     GUIbutton JumpButton;
     GUIbutton AttackButton;
+    GUIbutton PauseButton;
+
     GUIbutton primaryButton;
+
+    // Pause
+    private boolean isPaused = false;
+    private Object PauseB1;
+    private Object PauseB2;
+    Bitmap pauseBitmap;
 
     // Variable for Game State check
     private short GameState;
 
+    // Week 13 Toast
+    CharSequence text;
+    int toastTime;
+    Toast toast;
+
+    // Week 13 Alert Dialog
+    public boolean showAlert = true;
+
+    AlertDialog.Builder alert = null;
+    private Alert AlertObj;
+
+    // Week 13 Shared Preferences
+    SharedPreferences SharedPrefname;
+    SharedPreferences.Editor editName;
+    String Playername;
+
+    SharedPreferences SharedPrefscore;
+    SharedPreferences.Editor editScore;
+    int highScore;
+
     //constructor for this GamePanelSurfaceView class
-    public Gamepanelsurfaceview (Context context){
+    public Gamepanelsurfaceview (Context context, Activity activity){
 
         // Context is the current state of the application/object
         super(context);
@@ -109,6 +153,92 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Font
         font = Typeface.createFromAsset(getContext().getAssets(), "fonts/arial.ttf");
+
+        // Activity stuff
+        activityTracker = activity;
+        //// HOW TO CHANGE SCENES
+        //Intent intent = new Intent();
+        //intent.setClass(getContext(), Mainmenu.class);
+        //activityTracker.startActivity(intent);
+
+        // Week 13 Toast
+        Toastmessage(context);
+
+        // Week 13 Shared Preferences
+        SharedPrefname = getContext().getSharedPreferences("PlayerUSERID", Context.MODE_PRIVATE);
+        editName = SharedPrefname.edit();
+        Playername = "Player1";
+        Playername = SharedPrefname.getString("PlayerUSERID", "DEFAULT");
+
+        SharedPrefscore = getContext().getSharedPreferences("PlayerUSERSCORE", Context.MODE_PRIVATE);
+        editScore = SharedPrefscore.edit();
+        highScore = 0;
+        highScore = SharedPrefscore.getInt("PlayerUSERSCORE", 0);
+
+        // Week 13 Alert Dialog
+        AlertObj = new Alert(this);
+        alert = new AlertDialog.Builder(getContext());
+
+        // Allow players to input their name
+        final EditText input = new EditText(getContext());
+
+        // Define the input method where 'enter' key is disabled
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        // Define max of 20 characters to be entered for 'Name' field
+        int maxLength = 20;
+        InputFilter[] FilterArray = new InputFilter[1];
+        FilterArray[0] = new InputFilter.LengthFilter(maxLength);
+        input.setFilters(FilterArray);
+
+        // Setup the alert dialog
+        alert.setMessage("Game over! So how?");
+        alert.setCancelable(false);
+        alert.setView(input);
+
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface arg0, int arg1) {
+
+                Playername = input.getText().toString();
+                editScore.putString("PlayerUSERID", Playername);
+                editName.commit();
+
+                Intent intent = new Intent();
+                intent.setClass(getContext(), Mainmenu.class);
+                activityTracker.startActivity(intent);
+            }
+        });
+
+        // Week 9 Pause
+        PauseB1 = new Object(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)),
+                (int)(Screenwidth/15), (int)(Screenheight/10), true), Screenwidth / 2, 20);
+        PauseB2 = new Object(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)),
+                (int)(Screenwidth/15), (int)(Screenheight/10), true), Screenwidth / 2, 20);
+    }
+
+    // Week 13 Toast
+    public void Toastmessage(Context context)
+    {
+        text = "Attack!";
+        toastTime = Toast.LENGTH_SHORT;
+        toast = Toast.makeText(context, text, toastTime);
+    }
+
+    // Week 9 Pause
+    public void PauseButtonPressed()
+    {
+        if (isPaused)   // game is currently paused
+        {
+            isPaused = false;
+            pauseBitmap = PauseButton.GetBitMap();
+            myThread.unPause();
+        }
+        else
+        {
+            isPaused = true;
+            pauseBitmap = PauseButton.GetBitMapPressed();
+            myThread.pause();
+        }
     }
 
     public void InitButtons()
@@ -117,6 +247,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         LeftButton = new GUIbutton();
         AttackButton = new GUIbutton();
         JumpButton = new GUIbutton();
+        PauseButton = new GUIbutton();
         primaryButton = null;
 
         int buttonSize = (int)(0.7f * map.tileSize_Y * ((float)Screenwidth / (float)Screenheight));
@@ -125,52 +256,51 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         LeftButton.SetButtonSize(buttonSize);
         JumpButton.SetButtonSize(buttonSize);
         AttackButton.SetButtonSize((int)(buttonSize * 1.45));
+        PauseButton.SetButtonSize(buttonSize);
 
         LeftButton.SetButtonPos((int)(map.tileSize_X), (int)(7.8f * map.tileSize_Y));
         RightButton.SetButtonPos((int)(map.tileSize_X) + (int)(Screenwidth * 0.02) + buttonSize, (int)(7.8f * map.tileSize_Y));
         JumpButton.SetButtonPos((int)((map.GetCols() - 3.5f) * map.tileSize_X), (int)(7.8f * map.tileSize_Y));
         AttackButton.SetButtonPos((int)((map.GetCols() - 2) * map.tileSize_X), (int)(7.3f * map.tileSize_Y));
+        PauseButton.SetButtonPos(Screenwidth / 2, 20);
 
-        LeftButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton));
-        RightButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton));
-        JumpButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.jumpbutton));
-        AttackButton.SetBitMap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton));
+        LeftButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
+        RightButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
+        JumpButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.jumpbutton), JumpButton.GetButtonSize(), JumpButton.GetButtonSize(), true));
+        AttackButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true));
+        PauseButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause), PauseButton.GetButtonSize(), PauseButton.GetButtonSize(), true));
 
-        LeftButton.SetBitMapPressed(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton_pressed));
-        RightButton.SetBitMapPressed(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton_pressed));
-        JumpButton.SetBitMapPressed(BitmapFactory.decodeResource(getResources(), R.drawable.jumpbutton_pressed));
-        AttackButton.SetBitMapPressed(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton_pressed));
+        LeftButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton_pressed), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
+        RightButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton_pressed), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
+        JumpButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.jumpbutton_pressed), JumpButton.GetButtonSize(), JumpButton.GetButtonSize(), true));
+        AttackButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton_pressed), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true));
+        PauseButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause1), PauseButton.GetButtonSize(), PauseButton.GetButtonSize(), true));
+
+        // Init pause Bitmap
+        pauseBitmap = PauseButton.GetBitMapPressed();
     }
 
     public void RenderButtons(Canvas canvas)
     {
-        Bitmap scaledLeftButton;
         if(LeftButton.isPressed())
-            scaledLeftButton = Bitmap.createScaledBitmap(LeftButton.GetBitMapPressed(), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true);
+            canvas.drawBitmap(LeftButton.GetBitMapPressed(), (int)(LeftButton.GetPosition().x), (int)(LeftButton.GetPosition().y), null);
         else
-            scaledLeftButton = Bitmap.createScaledBitmap(LeftButton.GetBitMap(), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true);
-        canvas.drawBitmap(scaledLeftButton, (int)(LeftButton.GetPosition().x), (int)(LeftButton.GetPosition().y), null);
+            canvas.drawBitmap(LeftButton.GetBitMap(), (int)(LeftButton.GetPosition().x), (int)(LeftButton.GetPosition().y), null);
 
-        Bitmap scaledRightButton;
         if(RightButton.isPressed())
-            scaledRightButton = Bitmap.createScaledBitmap(RightButton.GetBitMapPressed(), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true);
+            canvas.drawBitmap(RightButton.GetBitMapPressed(), (int)(RightButton.GetPosition().x), (int)(RightButton.GetPosition().y), null);
         else
-            scaledRightButton = Bitmap.createScaledBitmap(RightButton.GetBitMap(), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true);
-        canvas.drawBitmap(scaledRightButton, (int)(RightButton.GetPosition().x), (int)(RightButton.GetPosition().y), null);
+            canvas.drawBitmap(RightButton.GetBitMap(), (int)(RightButton.GetPosition().x), (int)(RightButton.GetPosition().y), null);
 
-        Bitmap scaledAttackButton;
         if(AttackButton.isPressed())
-            scaledAttackButton = Bitmap.createScaledBitmap(AttackButton.GetBitMapPressed(), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true);
+            canvas.drawBitmap(AttackButton.GetBitMapPressed(), (int)(AttackButton.GetPosition().x), (int)(AttackButton.GetPosition().y), null);
         else
-            scaledAttackButton = Bitmap.createScaledBitmap(AttackButton.GetBitMap(), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true);
-        canvas.drawBitmap(scaledAttackButton, (int)(AttackButton.GetPosition().x), (int)(AttackButton.GetPosition().y), null);
+            canvas.drawBitmap(AttackButton.GetBitMap(), (int)(AttackButton.GetPosition().x), (int)(AttackButton.GetPosition().y), null);
 
-        Bitmap scaledJumpButton;
         if(JumpButton.isPressed())
-            scaledJumpButton = Bitmap.createScaledBitmap(JumpButton.GetBitMapPressed(), JumpButton.GetButtonSize(), JumpButton.GetButtonSize(), true);
+            canvas.drawBitmap(JumpButton.GetBitMapPressed(), (int)(JumpButton.GetPosition().x), (int)(JumpButton.GetPosition().y), null);
         else
-            scaledJumpButton = Bitmap.createScaledBitmap(JumpButton.GetBitMap(), JumpButton.GetButtonSize(), JumpButton.GetButtonSize(), true);
-        canvas.drawBitmap(scaledJumpButton, (int)(JumpButton.GetPosition().x), (int)(JumpButton.GetPosition().y), null);
+            canvas.drawBitmap(JumpButton.GetBitMap(), (int)(JumpButton.GetPosition().x), (int)(JumpButton.GetPosition().y), null);
     }
 
     //must implement inherited abstract methods
@@ -258,6 +388,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         player.spriteArray[player.GetState().GetValue()].draw(canvas);
 
         // HUD
+        RenderPause(canvas);
         RenderButtons(canvas);
         canvas.drawBitmap(playerProfile, 0.5f * map.tileSize_X, 0.5f * map.tileSize_Y, null);
         RenderPlayerHealthBar(canvas);
@@ -321,11 +452,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     player.Jump();
                 }
 
+                if (AttackButton.isPressed()) {
+                    // Init attack things here
+                    toast.show();
+                }
+
                 // update player movement
                 player.CheckIsInAir(map);
                 if (player.IsInAir()) {
                     player.SetState(Player.PLAYER_STATE.JUMP);
                     player.UpdateJump(deltaTime, map);
+                }
+
+                // Trigger Alert box
+                if (showAlert) {
+                    //AlertObj.RunAlert();
+                    showAlert = false;
                 }
             }
             break;
@@ -368,6 +510,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
 
         return false;
+    }
+
+    public void RenderPause(Canvas canvas) {
+        // Draw Pause button
+        //if (isPaused) {
+        //    canvas.drawBitmap(pauseBitmap, (int)(PauseButton.GetPosition().x), (int)(PauseButton.GetPosition().y), null);
+        //}
+        //else {
+        //    canvas.drawBitmap(pauseBitmap, (int)(PauseButton.GetPosition().x), (int)(PauseButton.GetPosition().y), null);
+        //}
+
+        canvas.drawBitmap(pauseBitmap, (int)(PauseButton.GetPosition().x), (int)(PauseButton.GetPosition().y), null);
+
+        if (isPaused) {
+            RenderTextOnScreen(canvas, "Game Paused", (int) (3.5f * map.tileSize_X), (int) (0.4f * map.tileSize_Y), textSize);
+        }
     }
 
     @Override
@@ -445,6 +603,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     primaryButton = JumpButton;
                     Log.v("Primary Button", "Jump Button");
                 }
+                Vector2 tempPause = new Vector2(PauseButton.GetPosition());
+                tempPause.x += PauseButton.GetButtonSize() / 2;
+                tempPause.y += PauseButton.GetButtonSize() / 2;
+                if(tempPause.Subtract(m_touch).GetLength() < PauseButton.GetButtonSize() / 2)
+                {
+                    if(vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(50);
+                    }
+                    PauseButton.SetPressed(true);
+                    PauseButtonPressed();   // pausing/unpausing action
+
+                    primaryButton = PauseButton;
+                    Log.v("Primary Button", "Pause Button");
+                }
+
                 break;
             case MotionEvent.ACTION_POINTER_DOWN:
                 //Log.v("DEBUG:","ACTION_POINTER_DOWN");
@@ -452,6 +626,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 boolean rightbutton = false;
                 boolean jumpbutton = false;
                 boolean attackbutton = false;
+                boolean pausebutton = false;
 
                 for(int idx = 0; idx < event.getPointerCount(); idx++)
                 {
@@ -501,6 +676,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         }
                     }
 
+                    tempPause = new Vector2(PauseButton.GetPosition());
+                    tempPause.x += PauseButton.GetButtonSize() / 2;
+                    tempPause.y += PauseButton.GetButtonSize() / 2;
+                    if (tempPause.Subtract(touch).GetLength() < PauseButton.GetButtonSize() / 2) {
+                        if (pausebutton == false) {
+                           pausebutton = true;
+                            continue;
+                        }
+                    }
+
                 }
                 if(leftbutton && !LeftButton.isPressed())
                 {
@@ -550,6 +735,19 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     JumpButton.SetPressed(false);
                 }
+                if(pausebutton && !PauseButton.isPressed())
+                {
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(50);
+                    }
+                    PauseButton.SetPressed(true);
+                    //Log.v("APD", "Right Button Pressed");
+                }else if(!pausebutton)
+                {
+                    PauseButton.SetPressed(false);
+                    PauseButtonPressed();   // pausing/unpausing action
+                }
                 break;
 
             case MotionEvent.ACTION_MOVE:
@@ -558,6 +756,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 rightbutton = false;
                 jumpbutton = false;
                 attackbutton = false;
+                pausebutton = false;
 
                 for(int idx = 0; idx < event.getPointerCount(); idx++)
                 {
@@ -607,6 +806,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         }
                     }
 
+                    tempPause = new Vector2(PauseButton.GetPosition());
+                    tempPause.x += PauseButton.GetButtonSize() / 2;
+                    tempPause.y += PauseButton.GetButtonSize() / 2;
+                    if (tempPause.Subtract(touch).GetLength() < PauseButton.GetButtonSize() / 2) {
+                        if (pausebutton == false) {
+                            pausebutton = true;
+                            continue;
+                        }
+                    }
+
                 }
                 if(leftbutton && !LeftButton.isPressed())
                 {
@@ -655,6 +864,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }else if(!jumpbutton)
                 {
                     JumpButton.SetPressed(false);
+                }
+                if (pausebutton && !PauseButton.isPressed())
+                {
+                    if (vibrator.hasVibrator())
+                    {
+                        vibrator.vibrate(50);
+                    }
+                    PauseButton.SetPressed(true);
+                } else if (!pausebutton)
+                {
+                    PauseButton.SetPressed(false);
+                    PauseButtonPressed();   // pausing/unpausing action
                 }
                 break;
             case MotionEvent.ACTION_POINTER_UP:
