@@ -25,13 +25,10 @@ public class Bossdragon extends Entity {
     }
 
     private BOSSDRAGON_STATE state;
-    private int maxHP;
 
     // Constructor
     public Bossdragon() {
         super(1000);
-        maxHP = 1000;
-        hp = maxHP;
         state = BOSSDRAGON_STATE.IDLE;
 
         spriteArray = new Spriteanimation[BOSSDRAGON_STATE.STATES_TOTAL.GetValue()];

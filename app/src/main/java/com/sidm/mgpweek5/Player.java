@@ -44,6 +44,7 @@ public class Player {
 
     // Sprite animation
     public Spriteanimation[] spriteArray;
+    private boolean flipSprites;
 
     // Constructor
     public Player() {
@@ -108,8 +109,8 @@ public class Player {
     }
 
     // Update
-    public void Update(double dt) {
-
+    public void Update(double dt)
+    {
     }
 
     // Check collision
@@ -127,7 +128,7 @@ public class Player {
     }
 
     public boolean CheckCollisionUpDown(Tilemap map, int X, int Y) {
-        if (map.tilemap[Y][X - 1] == 1 || map.tilemap[Y][X] == 1)
+        if (map.tilemap[Y][X] == 1)
         {
             return true;
         }
@@ -139,7 +140,7 @@ public class Player {
     public void MoveLeft(float deltaTime, Tilemap map)
     {
         float newPosX = position.x - deltaTime * SPEED;
-        int X = (int)((newPosX - map.tileSize_X) / map.tileSize_X);
+        int X = (int)((newPosX - 0.1f * map.tileSize_X) / map.tileSize_X);
         int Y = (int)(position.y / map.tileSize_Y);
 
         if (!CheckCollisionLeftRight(map, X, Y)) {
@@ -151,7 +152,7 @@ public class Player {
     public void MoveRight(float deltaTime, Tilemap map)
     {
         float newPosX = position.x + deltaTime * SPEED;
-        int X = (int)(newPosX / map.tileSize_X);
+        int X = (int)((newPosX + 0.1f * map.tileSize_X) / map.tileSize_X);
         int Y = (int)(position.y / map.tileSize_Y);
 
         if (!CheckCollisionLeftRight(map, X, Y)) {
@@ -161,7 +162,15 @@ public class Player {
 
     // Jump
     public void CheckIsInAir(Tilemap map) {
-        int X = (int)(position.x / map.tileSize_X);
+        int X;
+        if (flipSprites)    // facing left
+        {
+            X = (int)((position.x - 0.1f * map.tileSize_X) / map.tileSize_X);
+        }
+        else
+        {
+            X = (int)((position.x + 0.1f * map.tileSize_X) / map.tileSize_X);
+        }
         int Y = (int)((position.y + map.tileSize_Y) / map.tileSize_Y);
 
         if (!CheckCollisionUpDown(map, X, Y)) {
@@ -195,8 +204,16 @@ public class Player {
     public void UpdateJumpUpwards(float deltaTime, Tilemap map) {
         float newPosY = position.y + jumpSpeed * deltaTime;
 
-        int X = (int)(position.x / map.tileSize_X);
-        int Y = (int)((newPosY - map.tileSize_Y) / map.tileSize_Y);
+        int X;
+        if (flipSprites)    // facing left
+        {
+            X = (int)((position.x - 0.1f * map.tileSize_X) / map.tileSize_X);
+        }
+        else
+        {
+            X = (int)((position.x + 0.1f * map.tileSize_X) / map.tileSize_X);
+        }
+        int Y = (int)((newPosY - map.tileSize_Y + (0.9f * map.tileSize_Y)) / map.tileSize_Y);
 
         if (CheckCollisionUpDown(map, X, Y)) {
             jumpSpeed = 0.f;
@@ -209,7 +226,15 @@ public class Player {
     public void UpdateFreefall(float deltaTime, Tilemap map) {
         float newPosY = position.y + jumpSpeed * deltaTime;
 
-        int X = (int)(position.x / map.tileSize_X);
+        int X;
+        if (flipSprites)    // facing left
+        {
+            X = (int)((position.x - 0.1f * map.tileSize_X) / map.tileSize_X);
+        }
+        else
+        {
+            X = (int)((position.x + 0.1f * map.tileSize_X) / map.tileSize_X);
+        }
         int Y = (int)((newPosY + map.tileSize_Y) / map.tileSize_Y);
 
         if (CheckCollisionUpDown(map, X, Y)) {
@@ -233,6 +258,8 @@ public class Player {
         return hp;
     }
 
+    public int GetMaxHP() { return maxHP; }
+
     public boolean IsDead() {
         if (hp == 0)
             return true;
@@ -245,13 +272,25 @@ public class Player {
     }
 
 
-    // State
+    // State & Sprites
     public PLAYER_STATE GetState() {
         return state;
     }
 
     public void SetState(PLAYER_STATE state) {
         this.state = state;
+    }
+
+    public boolean GetFlipSprite() { return flipSprites; }
+
+    public void SetFlipSprite(boolean flip)
+    {
+        flipSprites = flip;
+    }
+
+    public void FlipSpriteAnimation()
+    {
+        spriteArray[state.value].SetFlipSprites(flipSprites);
     }
 
     // Attack

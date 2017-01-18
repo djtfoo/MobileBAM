@@ -8,13 +8,15 @@ public class Entity {
 
     protected Vector2 position = new Vector2();
     protected int hp;
+    protected final int maxHP;
     // Sprite animation
     public Spriteanimation[] spriteArray;
 
     // Constructor
     protected Entity(int hp) {
         position.SetZero();
-        hp = 1000;
+        maxHP = hp;
+        this.hp = maxHP;
     }
 
     // Position
@@ -40,6 +42,8 @@ public class Entity {
     public int GetHP() {
         return hp;
     }
+
+    public int GetMaxHP() { return maxHP; }
 
     public void TakeDamage(int damage) {
         SetHP(hp - damage);

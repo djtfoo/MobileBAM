@@ -2,6 +2,7 @@ package com.sidm.mgpweek5;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.Rect;
 
 /**
@@ -20,6 +21,8 @@ public class Spriteanimation {
     private int spriteWidth; // the width of the sprite to calculate the cut out rectangle
     private int spriteHeight; // the height of the sprite
 
+    private boolean flipSprites;    // reflect the sprites
+
     private int x; // the X coordinate of the object (top left of the image)
     private int y; // the Y coordinate of the object (top left of the image)
 
@@ -31,6 +34,9 @@ public class Spriteanimation {
         frame = frameCount;
         spriteWidth = bitmap.getWidth() / frameCount;
         spriteHeight = bitmap.getHeight();
+
+        flipSprites = false;
+
         sourceRect = new Rect(0, 0, spriteWidth, spriteHeight);
         framePeriod = 1000 / fps;
         frameTicker = 01;
@@ -124,13 +130,32 @@ public class Spriteanimation {
 
     public void draw(Canvas canvas) {
         // where to draw the sprite
-        Rect destRect = new Rect(getX(), getY(), getX() + spriteWidth, getY()
-                + spriteHeight);
-        canvas.drawBitmap(bitmap, sourceRect, destRect, null);
+        Rect destRect = new Rect(getX(), getY(), getX() + spriteWidth, getY() + spriteHeight);
+        if (flipSprites)
+        {
+            Matrix matrix = new Matrix();
+            matrix.preScale(-1, 1);
+            Bitmap reflectionImage = Bitmap.createBitmap(bitmap, 0,
+                    0, spriteWidth * frame, spriteHeight, matrix, false);
+
+            //sourceRect = ;
+
+            canvas.drawBitmap(reflectionImage, sourceRect, destRect, null);
+        }
+        else
+        {
+            canvas.drawBitmap(bitmap, sourceRect, destRect, null);
+            //destRect = new Rect(getX(), getY(), getX() + spriteWidth, getY() + spriteHeight);
+        }
+
+        //canvas.drawBitmap(bitmap, sourceRect, destRect, null);
     }
 
     public void recycleAnim(){
         bitmap.recycle();
     }
+
+    public boolean GetFlipSprites() { return flipSprites; }
+    public void SetFlipSprites(boolean flip) { flipSprites = flip; }
 
 }
