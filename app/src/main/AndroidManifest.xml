@@ -64,6 +64,15 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".Legacypage"
+            android:screenOrientation="landscape">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <action android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
     </application>
 
 </manifest>

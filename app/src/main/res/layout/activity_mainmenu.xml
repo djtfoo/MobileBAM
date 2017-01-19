@@ -69,4 +69,13 @@
         android:layout_alignBottom="@+id/maintitle"
         android:layout_centerHorizontal="true" />
 
+    <Button
+        android:id="@+id/btn_facebook"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginRight="10dp"
+        android:background="@drawable/button_facebook"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@+id/btn_options" />
+
 </RelativeLayout>

@@ -1,5 +1,7 @@
 package com.sidm.mgpweek5;
 
+import android.graphics.Bitmap;
+
 /**
  * Created by Foo on 6/12/2016.
  */
@@ -8,6 +10,8 @@ public class Projectile {
 
     private Vector2 position = new Vector2();
     private Vector2 velocity = new Vector2();
+
+    private Bitmap image;
 
     private double lifespan;
 

@@ -12,6 +12,8 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.hardware.SensorEvent;
+import android.hardware.SensorManager;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -24,11 +26,14 @@ import android.widget.EditText;
 import android.widget.Switch;
 import android.widget.Toast;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEventListener;
+
 /**
  * Created by Foo on 24/11/2016.
  */
 
-public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.Callback {
+public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
     // Implement this interface to receive information about changes to the surface.
 
     private Gamethread myThread = null; // Thread to control the rendering
@@ -107,9 +112,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     SharedPreferences.Editor editName;
     String Playername;
 
-    SharedPreferences SharedPrefscore;
-    SharedPreferences.Editor editScore;
-    int highScore;
+    // Week 14 Accelerometer test
+    private SensorManager sensor;
+    float[] SensorVar = new float[3];
+    private float[] values = {0 ,0, 0};
+
+    private Bitmap ball;
+    private Vector2 ballCoord = new Vector2();
+    private long lastTime = System.currentTimeMillis();
 
     //constructor for this GamePanelSurfaceView class
     public Gamepanelsurfaceview(Context context, Activity activity) {
@@ -175,16 +185,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Week 13 Toast
         Toastmessage(context);
 
+        // Week 14 Accelerometer
+        sensor = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
+        sensor.registerListener(this, sensor.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0),
+                SensorManager.SENSOR_DELAY_NORMAL);
+        ball = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.testball), Screenwidth / 6, Screenheight / 6, true);
+
         // Week 13 Shared Preferences
         SharedPrefname = getContext().getSharedPreferences("PlayerUSERID", Context.MODE_PRIVATE);
         editName = SharedPrefname.edit();
         Playername = "Player1";
         Playername = SharedPrefname.getString("PlayerUSERID", "DEFAULT");
-
-        SharedPrefscore = getContext().getSharedPreferences("PlayerUSERSCORE", Context.MODE_PRIVATE);
-        editScore = SharedPrefscore.edit();
-        highScore = 0;
-        highScore = SharedPrefscore.getInt("PlayerUSERSCORE", 0);
 
         // Week 13 Alert Dialog
         AlertObj = new Alert(this);
@@ -203,19 +214,21 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         input.setFilters(FilterArray);
 
         // Setup the alert dialog
-        alert.setMessage("Game over! So how?");
+        alert.setTitle("You Win!");
+        alert.setMessage("Record your name");
         alert.setCancelable(false);
+        alert.setIcon(R.drawable.icon_dragon_small);
         alert.setView(input);
 
         alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface arg0, int arg1) {
 
                 Playername = input.getText().toString();
-                editScore.putString("PlayerUSERID", Playername);
+                editName.putString("PlayerUSERID", Playername);
                 editName.commit();
 
                 Intent intent = new Intent();
-                intent.setClass(getContext(), Mainmenu.class);
+                intent.setClass(getContext(), Legacypage.class);
                 activityTracker.startActivity(intent);
             }
         });
@@ -351,6 +364,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             } catch (InterruptedException e) {
             }
         }
+
+        // Release the memory
+        sensor.unregisterListener(this);
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -456,6 +472,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         if (JumpButton.isPressed()) {
             RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, textSize);
         }
+
+        // Week 14 Accelerometer test ball
+        canvas.drawBitmap(ball, ballCoord.x, ballCoord.y, null);
     }
 
 
@@ -463,6 +482,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public void update(float dt, float fps) {
         this.deltaTime = dt;
         FPS = 1 / dt;
+        //Log.v("FPS", Float.toString(FPS));
         long dt_l = System.currentTimeMillis();
 
        switch (GameState) {
@@ -545,21 +565,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawText(text, posX, posY, paint);
     }
 
-    // Collision Check - tbc
-    boolean CheckCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
-        if (x2 >= x1 && x2 <= x1 + w1) {
-            if (y2 >= y1 && y2 <= y1 + h1)
-                return true;
-        }
-
-        if (x2 + w2 >= x1 && x2 + w2 <= x1 + w1) {
-            if (y2 >= y1 && y2 <= y1 + h1)
-                return true;
-        }
-
-        return false;
-    }
-
     public void RenderPause(Canvas canvas) {
         // Draw Pause button
         //if (isPaused) {
@@ -590,44 +595,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return false;
     }
 
-    private void Reset1Button(MotionEvent event, GUIbutton button)
-    {
-            Vector2 m_touch = new Vector2(event.getX(), event.getY());
-            Vector2 buttonPos = new Vector2(button.GetPosition());
-            buttonPos.x += button.GetButtonSize() / 2;
-            buttonPos.y += button.GetButtonSize() / 2;
-            if(buttonPos.Subtract(m_touch).GetLength() < button.GetButtonSize() / 2)
-            {
-                button.SetPressed(false);
-                return;
-                //Log.v("Input", "Button Pressed!");
-            }
-    }
-
-    private void ResetButton(MotionEvent event, GUIbutton button)
-    {
-        for(int idx = 0; idx < event.getPointerCount(); idx++)
-        {
-            int pointerID = event.findPointerIndex(idx);
-            if (pointerID < 0)
-                return;
-            Vector2 m_touch = new Vector2(event.getX(pointerID), event.getY(pointerID));
-            Vector2 buttonPos = new Vector2(button.GetPosition());
-            buttonPos.x += button.GetButtonSize() / 2;
-            buttonPos.y += button.GetButtonSize() / 2;
-            if(buttonPos.Subtract(m_touch).GetLength() < button.GetButtonSize() / 2)
-            {
-                button.SetPressed(false);
-                return;
-                //Log.v("Input", "Button Pressed!");
-            }
-
-        }
-    }
-
     private void ProcessInputDown(MotionEvent event)
     {
-        Log.v("STATE", "INPUT DOWN");
+        //Log.v("STATE", "INPUT DOWN");
         int PointerID = event.getActionIndex();
         if(PointerID < 0)
             return;
@@ -648,7 +618,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     private void ProcessInputUp(MotionEvent event)
     {
-        Log.v("STATE", "INPUT UP");
+       //Log.v("STATE", "INPUT UP");
         int PointerID = event.getActionIndex();
         if(PointerID < 0)
             return;
@@ -688,7 +658,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     private void ProcessInputMove(MotionEvent event)
     {
-        Log.v("STATE", "INPUT DRAG");
+        //Log.v("STATE", "INPUT DRAG");
         int pointerID = event.getActionIndex();
         if(pointerID < 0)
             return;
@@ -736,5 +706,54 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 break;
         }
         return true;
+    }
+
+    // Week 14 Accelerometer - method to implement and use
+    public void SensorMove()
+    {
+        float testX, testY;
+
+        testX = ballCoord.x + (values[1] * ((System.currentTimeMillis() - lastTime) / 1000));
+        testY = ballCoord.y + (values[0] * ((System.currentTimeMillis() - lastTime) / 1000));
+
+        // ball is going out of screen in x-axis
+        if (testX <= ball.getWidth() / 2 ||
+                testX >= Screenwidth - ball.getWidth() / 2)
+        {
+            // ball is within the screen in y-axis
+            if (testY > ball.getHeight() / 2 &&
+                    testY < Screenheight - ball.getHeight() / 2) {
+                ballCoord.y = testY;
+            }
+        }
+
+        // ball is out of the screen in the y-axis
+        else if (testY <= ball.getHeight() / 2 ||
+                testY >= Screenheight - ball.getHeight() / 2)
+        {
+            // ball is within the screen in the x-axis
+            if (testX > ball.getWidth() / 2 &&
+                    testX < Screenwidth - ball.getWidth() / 2)
+            {
+                ballCoord.x = testX;
+            }
+        }
+
+        else
+        {   // move the ship in both axis independent of the frame
+            ballCoord.x = testX;
+            ballCoord.y = testY;
+        }
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        values = event.values;
+        SensorMove();
+    }
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int i) {
+
     }
 }
