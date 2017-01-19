@@ -114,24 +114,20 @@ public class Player {
     }
 
     // Check collision
-    public boolean CheckCollisionLeftRight(Tilemap map, int X, int Y)
+    private boolean CheckCollisionLeftRight(Tilemap map, int X, int Y)
     {
         if (map.tilemap[Y][X] == 1)
-        {
             return true;
-        }
-        if (isInAir && map.tilemap[Y + 1][X] == 1) {
+
+        if (isInAir && map.tilemap[Y + 1][X] == 1)
             return true;
-        }
 
         return false;
     }
 
-    public boolean CheckCollisionUpDown(Tilemap map, int X, int Y) {
+    private boolean CheckCollisionUpDown(Tilemap map, int X, int Y) {
         if (map.tilemap[Y][X] == 1)
-        {
             return true;
-        }
 
         return false;
     }
@@ -169,7 +165,7 @@ public class Player {
         }
         else
         {
-            X = (int)((position.x - 0.3f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - 0.4f * map.tileSize_X) / map.tileSize_X);
         }
         int Y = (int)((position.y + map.tileSize_Y) / map.tileSize_Y);
 
@@ -204,18 +200,20 @@ public class Player {
     public void UpdateJumpUpwards(float deltaTime, Tilemap map) {
         float newPosY = position.y + jumpSpeed * deltaTime;
 
-        int X;
+        int X, X2;
         if (flipSprites)    // facing left
         {
-            X = (int)((position.x - 0.1f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x + 0.3f * map.tileSize_X) / map.tileSize_X);
+            X2 = (int)((position.x) / map.tileSize_X);
         }
         else
         {
-            X = (int)((position.x - 0.3f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - 0.4f * map.tileSize_X) / map.tileSize_X);
+            X2 = (int)((position.x) / map.tileSize_X);
         }
         int Y = (int)((newPosY - map.tileSize_Y + (0.9f * map.tileSize_Y)) / map.tileSize_Y);
 
-        if (CheckCollisionUpDown(map, X, Y)) {
+        if (CheckCollisionUpDown(map, X, Y) || CheckCollisionUpDown(map, X2, Y)) {
             jumpSpeed = 0.f;
         }
         else {   // move
@@ -229,11 +227,11 @@ public class Player {
         int X;
         if (flipSprites)    // facing left
         {
-            X = (int)((position.x + 0.3f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x  + 0.3f * map.tileSize_X) / map.tileSize_X);
         }
         else
         {
-            X = (int)((position.x - 0.3f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - 0.4f * map.tileSize_X) / map.tileSize_X);
         }
         int Y = (int)((newPosY + map.tileSize_Y) / map.tileSize_Y);
 
