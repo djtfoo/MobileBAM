@@ -21,6 +21,7 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.os.Vibrator;
 import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 
 /**
@@ -31,7 +32,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Implement this interface to receive information about changes to the surface.
 
     private Gamethread myThread = null; // Thread to control the rendering
-    private Vibrator vibrator = (Vibrator)this.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+    private Vibrator vibrator = (Vibrator) this.getContext().getSystemService(Context.VIBRATOR_SERVICE);
 
     // 1a) Variables used for background rendering
     private Bitmap bg, scaledbg;    // bg = background; scaledbg = scaled version of bg
@@ -66,11 +67,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     Player player = new Player();
     Bossdragon bossdragon = new Bossdragon();
 
+    private final int ButtonCount = 6;
+    private GUIbutton Buttons[];
     GUIbutton RightButton;
     GUIbutton LeftButton;
     GUIbutton JumpButton;
     GUIbutton AttackButton;
     GUIbutton PauseButton;
+    GUIbutton SwitchButton;
 
     GUIbutton primaryButton;
 
@@ -108,7 +112,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     int highScore;
 
     //constructor for this GamePanelSurfaceView class
-    public Gamepanelsurfaceview (Context context, Activity activity){
+    public Gamepanelsurfaceview(Context context, Activity activity) {
 
         // Context is the current state of the application/object
         super(context);
@@ -131,14 +135,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         scaledbg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
 
         tile_ground = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tile_ground),
-                (int)(map.tileSize_X), (int)(map.tileSize_Y), true);
+                (int) (map.tileSize_X), (int) (map.tileSize_Y), true);
 
         playerProfile = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.player_profile),
-                (int)(map.tileSize_X), (int)(map.tileSize_X), true);
+                (int) (map.tileSize_X), (int) (map.tileSize_X), true);
         bossProfile = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.dragon_profile),
-                (int)(map.tileSize_X), (int)(map.tileSize_X), true);
+                (int) (map.tileSize_X), (int) (map.tileSize_X), true);
 
-        textSize = (int)(0.3 * map.tileSize_X * ((float)Screenwidth / (float)Screenheight));
+        textSize = (int) (0.3 * map.tileSize_X * ((float) Screenwidth / (float) Screenheight));
 
         InitButtons();
         //Point1 = new TouchPoint();
@@ -218,102 +222,112 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Week 9 Pause
         PauseB1 = new Object(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)),
-                (int)(Screenwidth/15), (int)(Screenheight/10), true), Screenwidth / 2, 20);
+                (int) (Screenwidth / 15), (int) (Screenheight / 10), true), Screenwidth / 2, 20);
         PauseB2 = new Object(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)),
-                (int)(Screenwidth/15), (int)(Screenheight/10), true), Screenwidth / 2, 20);
+                (int) (Screenwidth / 15), (int) (Screenheight / 10), true), Screenwidth / 2, 20);
     }
 
     // Week 13 Toast
-    public void Toastmessage(Context context)
-    {
+    public void Toastmessage(Context context) {
         text = "Attack!";
         toastTime = Toast.LENGTH_SHORT;
         toast = Toast.makeText(context, text, toastTime);
     }
 
     // Week 9 Pause
-    public void PauseButtonPressed()
-    {
+    public void PauseButtonPressed() {
         if (isPaused)   // game is currently paused
         {
             isPaused = false;
             pauseBitmap = PauseButton.GetBitMap();
             myThread.unPause();
-        }
-        else
-        {
+        } else {
             isPaused = true;
             pauseBitmap = PauseButton.GetBitMapPressed();
             myThread.pause();
         }
     }
 
-    public void InitButtons()
-    {
+    public void InitButtons() {
         RightButton = new GUIbutton();
         LeftButton = new GUIbutton();
         AttackButton = new GUIbutton();
         JumpButton = new GUIbutton();
         PauseButton = new GUIbutton();
+        SwitchButton = new GUIbutton();
         primaryButton = null;
 
-        int buttonSize = (int)(0.7f * map.tileSize_Y * ((float)Screenwidth / (float)Screenheight));
+        int buttonSize = (int) (0.7f * map.tileSize_Y * ((float) Screenwidth / (float) Screenheight));
 
         RightButton.SetButtonSize(buttonSize);
         LeftButton.SetButtonSize(buttonSize);
         JumpButton.SetButtonSize(buttonSize);
-        AttackButton.SetButtonSize((int)(buttonSize * 1.45));
-        PauseButton.SetButtonSize((int)map.tileSize_X);
+        SwitchButton.SetButtonSize(buttonSize);
+        AttackButton.SetButtonSize((int) (buttonSize * 1.45));
+        PauseButton.SetButtonSize((int) map.tileSize_X);
 
-        LeftButton.SetButtonPos((int)(map.tileSize_X), (int)(7.8f * map.tileSize_Y));
-        RightButton.SetButtonPos((int)(map.tileSize_X) + (int)(Screenwidth * 0.02) + buttonSize, (int)(7.8f * map.tileSize_Y));
-        JumpButton.SetButtonPos((int)((map.GetCols() - 3.5f) * map.tileSize_X), (int)(7.8f * map.tileSize_Y));
-        AttackButton.SetButtonPos((int)((map.GetCols() - 2) * map.tileSize_X), (int)(7.3f * map.tileSize_Y));
-        PauseButton.SetButtonPos((int)((map.GetCols() / 2 - 0.5f) * map.tileSize_X), (int)(0.2f * map.tileSize_Y));
+        LeftButton.SetButtonPos((int) (map.tileSize_X), (int) (7.8f * map.tileSize_Y));
+        RightButton.SetButtonPos((int) (map.tileSize_X) + (int) (Screenwidth * 0.02) + buttonSize, (int) (7.8f * map.tileSize_Y));
+        JumpButton.SetButtonPos((int) ((map.GetCols() - 3.5f) * map.tileSize_X), (int) (7.8f * map.tileSize_Y));
+        AttackButton.SetButtonPos((int) ((map.GetCols() - 2) * map.tileSize_X), (int) (7.3f * map.tileSize_Y));
+        PauseButton.SetButtonPos((int) ((map.GetCols() / 2 - 0.5f) * map.tileSize_X), (int) (0.2f * map.tileSize_Y));
+        SwitchButton.SetButtonPos((int) (map.tileSize_X), (int) (10.f * map.tileSize_Y));
+
 
         LeftButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
         RightButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
         JumpButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.jumpbutton), JumpButton.GetButtonSize(), JumpButton.GetButtonSize(), true));
         AttackButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true));
         PauseButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause), PauseButton.GetButtonSize(), PauseButton.GetButtonSize(), true));
+        SwitchButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.switchbutton), SwitchButton.GetButtonSize(), SwitchButton.GetButtonSize(), true));
+        SwitchButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.switchbutton), SwitchButton.GetButtonSize(), SwitchButton.GetButtonSize(), true));
 
         LeftButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton_pressed), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
         RightButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton_pressed), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
         JumpButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.jumpbutton_pressed), JumpButton.GetButtonSize(), JumpButton.GetButtonSize(), true));
         AttackButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton_pressed), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true));
         PauseButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause1), PauseButton.GetButtonSize(), PauseButton.GetButtonSize(), true));
+        SwitchButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.switchbutton_pressed), SwitchButton.GetButtonSize(), SwitchButton.GetButtonSize(), true));
 
         // Init pause Bitmap
         pauseBitmap = PauseButton.GetBitMap();
+
+
+        Buttons = new GUIbutton[6];
+        Buttons[0] = LeftButton;
+        Buttons[1] = RightButton;
+        Buttons[2] = JumpButton;
+        Buttons[3] = AttackButton;
+        Buttons[4] = PauseButton;
+        Buttons[5] = SwitchButton;
     }
 
-    public void RenderButtons(Canvas canvas)
-    {
-        if(LeftButton.isPressed())
-            canvas.drawBitmap(LeftButton.GetBitMapPressed(), (int)(LeftButton.GetPosition().x), (int)(LeftButton.GetPosition().y), null);
+    public void RenderButtons(Canvas canvas) {
+        if (LeftButton.isPressed())
+            canvas.drawBitmap(LeftButton.GetBitMapPressed(), (int) (LeftButton.GetPosition().x), (int) (LeftButton.GetPosition().y), null);
         else
-            canvas.drawBitmap(LeftButton.GetBitMap(), (int)(LeftButton.GetPosition().x), (int)(LeftButton.GetPosition().y), null);
+            canvas.drawBitmap(LeftButton.GetBitMap(), (int) (LeftButton.GetPosition().x), (int) (LeftButton.GetPosition().y), null);
 
-        if(RightButton.isPressed())
-            canvas.drawBitmap(RightButton.GetBitMapPressed(), (int)(RightButton.GetPosition().x), (int)(RightButton.GetPosition().y), null);
+        if (RightButton.isPressed())
+            canvas.drawBitmap(RightButton.GetBitMapPressed(), (int) (RightButton.GetPosition().x), (int) (RightButton.GetPosition().y), null);
         else
-            canvas.drawBitmap(RightButton.GetBitMap(), (int)(RightButton.GetPosition().x), (int)(RightButton.GetPosition().y), null);
+            canvas.drawBitmap(RightButton.GetBitMap(), (int) (RightButton.GetPosition().x), (int) (RightButton.GetPosition().y), null);
 
-        if(AttackButton.isPressed())
-            canvas.drawBitmap(AttackButton.GetBitMapPressed(), (int)(AttackButton.GetPosition().x), (int)(AttackButton.GetPosition().y), null);
+        if (AttackButton.isPressed())
+            canvas.drawBitmap(AttackButton.GetBitMapPressed(), (int) (AttackButton.GetPosition().x), (int) (AttackButton.GetPosition().y), null);
         else
-            canvas.drawBitmap(AttackButton.GetBitMap(), (int)(AttackButton.GetPosition().x), (int)(AttackButton.GetPosition().y), null);
+            canvas.drawBitmap(AttackButton.GetBitMap(), (int) (AttackButton.GetPosition().x), (int) (AttackButton.GetPosition().y), null);
 
-        if(JumpButton.isPressed())
-            canvas.drawBitmap(JumpButton.GetBitMapPressed(), (int)(JumpButton.GetPosition().x), (int)(JumpButton.GetPosition().y), null);
+        if (JumpButton.isPressed())
+            canvas.drawBitmap(JumpButton.GetBitMapPressed(), (int) (JumpButton.GetPosition().x), (int) (JumpButton.GetPosition().y), null);
         else
-            canvas.drawBitmap(JumpButton.GetBitMap(), (int)(JumpButton.GetPosition().x), (int)(JumpButton.GetPosition().y), null);
+            canvas.drawBitmap(JumpButton.GetBitMap(), (int) (JumpButton.GetPosition().x), (int) (JumpButton.GetPosition().y), null);
     }
 
     //must implement inherited abstract methods
-    public void surfaceCreated(SurfaceHolder holder){
+    public void surfaceCreated(SurfaceHolder holder) {
         // Create the thread
-        if (!myThread.isAlive()){
+        if (!myThread.isAlive()) {
             myThread = new Gamethread(getHolder(), this);
             myThread.startRun(true);
             myThread.start();
@@ -322,9 +336,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         soundmanager.PlayBGM();
     }
 
-    public void surfaceDestroyed(SurfaceHolder holder){
+    public void surfaceDestroyed(SurfaceHolder holder) {
         // Destroy the thread
-        if (myThread.isAlive()){
+        if (myThread.isAlive()) {
             myThread.startRun(false);
             soundmanager.StopBGM();
             soundmanager.Exit();
@@ -334,14 +348,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             try {
                 myThread.join();
                 retry = false;
-            }
-            catch (InterruptedException e)
-            {
+            } catch (InterruptedException e) {
             }
         }
     }
 
-    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height){
+    public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
 
     }
 
@@ -364,7 +376,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         canvas.drawRect(1.55f * map.tileSize_X, 0.5f * map.tileSize_Y, ((map.GetCols() / 2) - 0.5f) * map.tileSize_X, 0.9f * map.tileSize_Y, paint);
 
-        float hpRatio = (float)player.GetHP() / (float)player.GetMaxHP();
+        float hpRatio = (float) player.GetHP() / (float) player.GetMaxHP();
         float hpBarStart = 1.55f * map.tileSize_X;
         float hpBarLength = ((map.GetCols() / 2) - 0.55f) * map.tileSize_X - hpBarStart;
 
@@ -384,7 +396,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         canvas.drawRect(((map.GetCols() / 2) + 0.5f) * map.tileSize_X, 0.5f * map.tileSize_Y, (map.GetCols() - 1.55f) * map.tileSize_X, 0.9f * map.tileSize_Y, paint);
 
-        float hpRatio = (float)bossdragon.GetHP() / (float)bossdragon.GetMaxHP();
+        float hpRatio = (float) bossdragon.GetHP() / (float) bossdragon.GetMaxHP();
         float hpBarStart = (map.GetCols() - 1.55f) * map.tileSize_X;
         float hpBarLength = hpBarStart - ((map.GetCols() / 2) + 0.55f) * map.tileSize_X;
 
@@ -405,16 +417,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawBitmap(scaledbg, bgX + Screenwidth, bgY, null);    // 2nd background image
 
         // draw the boss enemy
-        bossdragon.spriteArray[bossdragon.GetState().GetValue()].setX((int)bossdragon.GetPosition().x);
-        bossdragon.spriteArray[bossdragon.GetState().GetValue()].setY((int)bossdragon.GetPosition().y);
+        bossdragon.spriteArray[bossdragon.GetState().GetValue()].setX((int) bossdragon.GetPosition().x);
+        bossdragon.spriteArray[bossdragon.GetState().GetValue()].setY((int) bossdragon.GetPosition().y);
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].draw(canvas);
 
         // draw the tilemap
         drawTilemap(canvas);
 
         // draw the player
-        player.spriteArray[player.GetState().GetValue()].setX((int)player.GetPosition().x);
-        player.spriteArray[player.GetState().GetValue()].setY((int)player.GetPosition().y);
+        player.spriteArray[player.GetState().GetValue()].setX((int) player.GetPosition().x);
+        player.spriteArray[player.GetState().GetValue()].setY((int) player.GetPosition().y);
         player.spriteArray[player.GetState().GetValue()].draw(canvas);
 
         // HUD
@@ -428,33 +440,32 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         RenderBossHealthBar(canvas);
 
         // Debug text
-        RenderTextOnScreen(canvas, "FPS " + FPS, (int)(1.5f * map.tileSize_X), (int)(0.4f * map.tileSize_Y), textSize);
+        RenderTextOnScreen(canvas, "FPS " + FPS, (int) (1.5f * map.tileSize_X), (int) (0.4f * map.tileSize_Y), textSize);
         //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
         //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
 
-        if(RightButton.isPressed()) {
+        if (RightButton.isPressed()) {
             RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, textSize);
         }
-        if(LeftButton.isPressed()) {
+        if (LeftButton.isPressed()) {
             RenderTextOnScreen(canvas, "Left Button Pressed", 130, 325, textSize);
         }
-        if(AttackButton.isPressed()) {
+        if (AttackButton.isPressed()) {
             RenderTextOnScreen(canvas, "Attack Button Pressed", 130, 375, textSize);
         }
-        if(JumpButton.isPressed()) {
+        if (JumpButton.isPressed()) {
             RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, textSize);
         }
     }
 
 
     //Update method to update the game play
-    public void update(float dt, float fps){
-        FPS = fps;
+    public void update(float dt, float fps) {
         this.deltaTime = dt;
-
+        FPS = 1 / dt;
         long dt_l = System.currentTimeMillis();
 
-        switch (GameState) {
+       switch (GameState) {
             case 0: {
                 // 3) Update the background to allow panning effect
                 bgX -= 200 * deltaTime;      // temp value to speed the panning
@@ -467,19 +478,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(dt_l);
 
                 // get key press
-                if(RightButton.isPressed())
-                {
+                if (RightButton.isPressed()) {
                     player.SetState(Player.PLAYER_STATE.MOVE);
                     player.MoveRight(deltaTime, map);
                     player.SetFlipSprite(false);
-                }
-                else if(LeftButton.isPressed())
-                {
+                } else if (LeftButton.isPressed()) {
                     player.SetState(Player.PLAYER_STATE.MOVE);
                     player.MoveLeft(deltaTime, map);
                     player.SetFlipSprite(true);
-                }
-                else {
+                } else {
                     player.SetState(Player.PLAYER_STATE.IDLE);
                 }
 
@@ -518,9 +525,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     }
 
     // Rendering is done on Canvas
-    public void doDraw(Canvas canvas){
-        switch (GameState)
-        {
+    public void doDraw(Canvas canvas) {
+        switch (GameState) {
             case 0:
                 RenderGameplay(canvas);
                 break;
@@ -540,8 +546,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     }
 
     // Collision Check - tbc
-    boolean CheckCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2)
-    {
+    boolean CheckCollision(int x1, int y1, int w1, int h1, int x2, int y2, int w2, int h2) {
         if (x2 >= x1 && x2 <= x1 + w1) {
             if (y2 >= y1 && y2 <= y1 + h1)
                 return true;
@@ -564,333 +569,172 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //    canvas.drawBitmap(pauseBitmap, (int)(PauseButton.GetPosition().x), (int)(PauseButton.GetPosition().y), null);
         //}
 
-        canvas.drawBitmap(pauseBitmap, (int)(PauseButton.GetPosition().x), (int)(PauseButton.GetPosition().y), null);
+        canvas.drawBitmap(pauseBitmap, (int) (PauseButton.GetPosition().x), (int) (PauseButton.GetPosition().y), null);
 
         if (isPaused) {
             RenderTextOnScreen(canvas, "Game Paused", (int) (3.5f * map.tileSize_X), (int) (0.4f * map.tileSize_Y), textSize);
         }
     }
 
+
+    private boolean CheckButtonPressed(Vector2 m_touch, GUIbutton button)
+    {
+            Vector2 buttonPos = new Vector2(button.GetPosition());
+            buttonPos.x += button.GetButtonSize() / 2;
+            buttonPos.y += button.GetButtonSize() / 2;
+            if(buttonPos.Subtract(m_touch).GetLength() < button.GetButtonSize() / 2) {
+                return true;
+                //Log.v("Input", "Button Pressed!");
+            }
+
+        return false;
+    }
+
+    private void Reset1Button(MotionEvent event, GUIbutton button)
+    {
+            Vector2 m_touch = new Vector2(event.getX(), event.getY());
+            Vector2 buttonPos = new Vector2(button.GetPosition());
+            buttonPos.x += button.GetButtonSize() / 2;
+            buttonPos.y += button.GetButtonSize() / 2;
+            if(buttonPos.Subtract(m_touch).GetLength() < button.GetButtonSize() / 2)
+            {
+                button.SetPressed(false);
+                return;
+                //Log.v("Input", "Button Pressed!");
+            }
+    }
+
+    private void ResetButton(MotionEvent event, GUIbutton button)
+    {
+        for(int idx = 0; idx < event.getPointerCount(); idx++)
+        {
+            int pointerID = event.findPointerIndex(idx);
+            if (pointerID < 0)
+                return;
+            Vector2 m_touch = new Vector2(event.getX(pointerID), event.getY(pointerID));
+            Vector2 buttonPos = new Vector2(button.GetPosition());
+            buttonPos.x += button.GetButtonSize() / 2;
+            buttonPos.y += button.GetButtonSize() / 2;
+            if(buttonPos.Subtract(m_touch).GetLength() < button.GetButtonSize() / 2)
+            {
+                button.SetPressed(false);
+                return;
+                //Log.v("Input", "Button Pressed!");
+            }
+
+        }
+    }
+
+    private void ProcessInputDown(MotionEvent event)
+    {
+        Log.v("STATE", "INPUT DOWN");
+        int PointerID = event.getActionIndex();
+        if(PointerID < 0)
+            return;
+        for (int i = 0; i < 6; i++) {
+            if(Buttons[i].isPressed())
+                continue;
+            if (CheckButtonPressed(new Vector2(event.getX(PointerID), event.getY(PointerID)), Buttons[i]))
+            {
+                if(vibrator.hasVibrator())
+                {
+                    vibrator.vibrate(50);
+                }
+                Buttons[i].PointerIndex = PointerID;
+                Buttons[i].SetPressed(true);
+            }
+        }
+    }
+
+    private void ProcessInputUp(MotionEvent event)
+    {
+        Log.v("STATE", "INPUT UP");
+        int PointerID = event.getActionIndex();
+        if(PointerID < 0)
+            return;
+        Log.v("STATE", Integer.toString(PointerID));
+
+        for (int i = 0; i < 6; i++) {
+            Log.v("Buttons", Integer.toString(Buttons[i].PointerIndex));
+            if (Buttons[i].PointerIndex == PointerID)
+            {
+                Buttons[i].PointerIndex = -1;
+                Buttons[i].SetPressed(false);
+            }
+        }
+    }
+
+    private boolean CheckIfLineIntersect(Vector2 lineStart, Vector2 lineEnd, Vector2 CirclePos, float radius)
+    {
+        //parameters: ax ay bx by cx cy r
+        lineStart.x -= CirclePos.x;
+        lineStart.y -= CirclePos.y;
+        lineEnd.x -= CirclePos.x;
+        lineEnd.y -= CirclePos.y;
+        float a = (lineStart.x * lineStart.x) + (lineStart.y * lineStart.y) - (radius * radius);
+        float b = 2*(lineStart.x*(lineEnd.x - lineStart.x) + lineStart.y*(lineEnd.y - lineStart.y));
+        float c = (lineEnd.x - lineStart.x)*(lineEnd.x - lineStart.x) + (lineEnd.y - lineStart.x)* (lineEnd.y - lineStart.x);
+        float disc = (b*b) - 4*a*c;
+        if (disc >= 0) return true;
+
+        return false;
+        //if(disc <= 0) return false;
+        //float sqrtdisc = (float)Math.sqrt(disc);
+        //float t1 = (-b + sqrtdisc)/(2*a);
+        //float t2 = (-b - sqrtdisc)/(2*a);
+        //if(0 < t1 && t1 < 1 && 0 < t2 && t2 < 1) return true;
+        //return false;
+    }
+
+    private void ProcessInputMove(MotionEvent event)
+    {
+        Log.v("STATE", "INPUT DRAG");
+        int pointerID = event.getActionIndex();
+        if(pointerID < 0)
+            return;
+        Vector2 CurrenTouchPos = new Vector2(
+                event.getX(pointerID),
+                event.getY(pointerID)
+        );
+
+        for(int i = 0; i < 6; i++)
+        {
+            if(CheckButtonPressed(CurrenTouchPos, Buttons[i]))
+            {
+                Buttons[i].SetPressed(true);
+                Buttons[i].PointerIndex = pointerID;
+            }else
+            {
+                if(Buttons[i].PointerIndex == pointerID)
+                {
+                    Buttons[i].PointerIndex = -1;
+                    Buttons[i].SetPressed(false);
+                }
+            }
+
+        }
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        /*
-        // 5) In event of touch on screen, the spaceship will relocate to the point of touch
-        short m_touchX = (short) event.getX();
-        short m_touchY = (short) event.getY();
+        int action = event.getAction();
 
-        if (event.getAction() == MotionEvent.ACTION_DOWN) {
-            mX = (short) (m_touchX - shipArr[shipArrIdx].getWidth() / 2);
-            mY = (short) (m_touchY - shipArr[shipArrIdx].getHeight() / 2);
-        }
-        return super.onTouchEvent(event);
-        */
-
-        //int touch_1 = event.getPointerId(0);
-        //int touch_2 = event.getPointerId(1);
-
-        int action = event.getAction(); // Check for the action of touch
-        switch(action) {
-
+        //Log.v("TEST", Integer.toString(event.getPointerCount()));
+        switch(action & event.ACTION_MASK)
+        {
             case MotionEvent.ACTION_DOWN:
-                //Log.v("DEBUG:","ACTION_DOWN");
-                Vector2 m_touch = new Vector2(event.getX(), event.getY());
-                Vector2 tempLeft = new Vector2(LeftButton.GetPosition());
-                tempLeft.x += LeftButton.GetButtonSize() / 2;
-                tempLeft.y += LeftButton.GetButtonSize() / 2;
-                if(tempLeft.Subtract(m_touch).GetLength() < LeftButton.GetButtonSize() / 2)
-                {
-                    if(vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    LeftButton.SetPressed(true);
-                    primaryButton = LeftButton;
-                    Log.v("Primary Button", "Left Button");
-                }
-                Vector2 tempRight = new Vector2(RightButton.GetPosition());
-                tempRight.x += RightButton.GetButtonSize() / 2;
-                tempRight.y += RightButton.GetButtonSize() / 2;
-                if(tempRight.Subtract(m_touch).GetLength() < RightButton.GetButtonSize() / 2)
-                {
-                    if(vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    RightButton.SetPressed(true);
-                    primaryButton = RightButton;
-                    Log.v("Primary Button", "Right Button");
-                }
-                Vector2 tempAttack = new Vector2(AttackButton.GetPosition());
-                tempAttack.x += AttackButton.GetButtonSize() / 2;
-                tempAttack.y += AttackButton.GetButtonSize() / 2;
-                if(tempAttack.Subtract(m_touch).GetLength() < AttackButton.GetButtonSize() / 2)
-                {
-                    if(vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    AttackButton.SetPressed(true);
-                    primaryButton = AttackButton;
-                    Log.v("Primary Button", "Attack Button");
-                }
-                Vector2 tempJump = new Vector2(JumpButton.GetPosition());
-                tempJump.x += JumpButton.GetButtonSize() / 2;
-                tempJump.y += JumpButton.GetButtonSize() / 2;
-                if(tempJump.Subtract(m_touch).GetLength() < JumpButton.GetButtonSize() / 2)
-                {
-                    if(vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    JumpButton.SetPressed(true);
-                    primaryButton = JumpButton;
-                    Log.v("Primary Button", "Jump Button");
-                }
-                Vector2 tempPause = new Vector2(PauseButton.GetPosition());
-                tempPause.x += PauseButton.GetButtonSize() / 2;
-                tempPause.y += PauseButton.GetButtonSize() / 2;
-                if(tempPause.Subtract(m_touch).GetLength() < PauseButton.GetButtonSize() / 2)
-                {
-                    if(vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    PauseButton.SetPressed(true);
-                    PauseButtonPressed();   // pausing/unpausing action
-
-                    primaryButton = PauseButton;
-                    Log.v("Primary Button", "Pause Button");
-                }
-
-                break;
-            case MotionEvent.ACTION_POINTER_DOWN:
-                //Log.v("DEBUG:","ACTION_POINTER_DOWN");
-                boolean leftbutton = false;
-                boolean rightbutton = false;
-                boolean jumpbutton = false;
-                boolean attackbutton = false;
-
-                for(int idx = 0; idx < event.getPointerCount(); idx++)
-                {
-                    int pointerID = event.findPointerIndex(idx);
-                    if(pointerID < 0)
-                        continue;
-                    Vector2 touch = new Vector2(event.getX(pointerID), event.getY(pointerID));
-                    tempJump = new Vector2(JumpButton.GetPosition());
-                    tempJump.x += JumpButton.GetButtonSize() / 2;
-                    tempJump.y += JumpButton.GetButtonSize() / 2;
-                    if (tempJump.Subtract(touch).GetLength() < JumpButton.GetButtonSize() / 2) {
-                        if (jumpbutton == false) {
-                            jumpbutton = true;
-                            continue;
-                        }
-                    }
-
-                    tempAttack = new Vector2(AttackButton.GetPosition());
-                    tempAttack.x += AttackButton.GetButtonSize() / 2;
-                    tempAttack.y += AttackButton.GetButtonSize() / 2;
-                    if (tempAttack.Subtract(touch).GetLength() < AttackButton.GetButtonSize() / 2) {
-                        if (attackbutton == false) {
-                            attackbutton = true;
-                            continue;
-                            }
-                    }
-
-                    tempRight = new Vector2(RightButton.GetPosition());
-                    tempRight.x += RightButton.GetButtonSize() / 2;
-                    tempRight.y += RightButton.GetButtonSize() / 2;
-                    if(tempRight.Subtract(touch).GetLength() < RightButton.GetButtonSize() / 2)
-                    {
-                        if(rightbutton == false)
-                        {
-                            rightbutton = true;
-                            continue;
-                        }
-                    }
-
-                    tempLeft = new Vector2(LeftButton.GetPosition());
-                    tempLeft.x += LeftButton.GetButtonSize() / 2;
-                    tempLeft.y += LeftButton.GetButtonSize() / 2;
-                    if (tempLeft.Subtract(touch).GetLength() < LeftButton.GetButtonSize() / 2) {
-                        if (leftbutton == false) {
-                            leftbutton = true;
-                            continue;
-                        }
-                    }
-
-                }
-                if(leftbutton && !LeftButton.isPressed())
-                {
-                    LeftButton.SetPressed(true);
-                    if (vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    //Log.v("APD", "Left Button Pressed");
-                }else if(!leftbutton)
-                {
-                    LeftButton.SetPressed(false);
-                }
-                if(rightbutton && !RightButton.isPressed())
-                {
-                    if (vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    RightButton.SetPressed(true);
-                    //Log.v("APD", "Right Button Pressed");
-                }else if(!rightbutton)
-                {
-                    RightButton.SetPressed(false);
-                }
-                if(attackbutton && !AttackButton.isPressed())
-                {
-                    if (vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    AttackButton.SetPressed(true);
-                    //Log.v("APD", "Right Button Pressed");
-                }else if(!attackbutton)
-                {
-                    AttackButton.SetPressed(false);
-                }
-                if(jumpbutton && !JumpButton.isPressed())
-                {
-                    if (vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    JumpButton.SetPressed(true);
-                    //Log.v("APD", "Right Button Pressed");
-                }else if(!jumpbutton)
-                {
-                    JumpButton.SetPressed(false);
-                }
-                break;
-
-            case MotionEvent.ACTION_MOVE:
-                //Log.v("DEBUG:","ACTION_MOVE");
-                leftbutton = false;
-                rightbutton = false;
-                jumpbutton = false;
-                attackbutton = false;
-
-                for(int idx = 0; idx < event.getPointerCount(); idx++)
-                {
-                    int pointerID = event.findPointerIndex(idx);
-                    if(pointerID < 0)
-                        continue;
-                    Vector2 touch = new Vector2(event.getX(pointerID), event.getY(pointerID));
-                    tempJump = new Vector2(JumpButton.GetPosition());
-                    tempJump.x += JumpButton.GetButtonSize() / 2;
-                    tempJump.y += JumpButton.GetButtonSize() / 2;
-                    if (tempJump.Subtract(touch).GetLength() < JumpButton.GetButtonSize() / 2) {
-                        if (jumpbutton == false) {
-                            jumpbutton = true;
-                            continue;
-                        }
-                    }
-
-                    tempAttack = new Vector2(AttackButton.GetPosition());
-                    tempAttack.x += AttackButton.GetButtonSize() / 2;
-                    tempAttack.y += AttackButton.GetButtonSize() / 2;
-                    if (tempAttack.Subtract(touch).GetLength() < AttackButton.GetButtonSize() / 2) {
-                        if (attackbutton == false) {
-                            attackbutton = true;
-                            continue;
-                        }
-                    }
-
-                    tempRight = new Vector2(RightButton.GetPosition());
-                    tempRight.x += RightButton.GetButtonSize() / 2;
-                    tempRight.y += RightButton.GetButtonSize() / 2;
-                    if(tempRight.Subtract(touch).GetLength() < RightButton.GetButtonSize() / 2)
-                    {
-                        if(rightbutton == false)
-                        {
-                            rightbutton = true;
-                            continue;
-                        }
-                    }
-
-                    tempLeft = new Vector2(LeftButton.GetPosition());
-                    tempLeft.x += LeftButton.GetButtonSize() / 2;
-                    tempLeft.y += LeftButton.GetButtonSize() / 2;
-                    if (tempLeft.Subtract(touch).GetLength() < LeftButton.GetButtonSize() / 2) {
-                        if (leftbutton == false) {
-                            leftbutton = true;
-                            continue;
-                        }
-                    }
-
-                }
-                if(leftbutton && !LeftButton.isPressed())
-                {
-                    LeftButton.SetPressed(true);
-                    if (vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    //Log.v("APD", "Left Button Pressed");
-                }else if(!leftbutton)
-                {
-                    LeftButton.SetPressed(false);
-                }
-                if(rightbutton && !RightButton.isPressed())
-                {
-                    if (vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    RightButton.SetPressed(true);
-                    //Log.v("APD", "Right Button Pressed");
-                }else if(!rightbutton)
-                {
-                    RightButton.SetPressed(false);
-                }
-                if(attackbutton && !AttackButton.isPressed())
-                {
-                    if (vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    AttackButton.SetPressed(true);
-                    //Log.v("APD", "Right Button Pressed");
-                }else if(!attackbutton)
-                {
-                    AttackButton.SetPressed(false);
-                }
-                if(jumpbutton && !JumpButton.isPressed())
-                {
-                    if (vibrator.hasVibrator())
-                    {
-                        vibrator.vibrate(50);
-                    }
-                    JumpButton.SetPressed(true);
-                    //Log.v("APD", "Right Button Pressed");
-                }else if(!jumpbutton)
-                {
-                    JumpButton.SetPressed(false);
-                }
-                break;
-            case MotionEvent.ACTION_POINTER_UP:
-                //test = false;
-                break;
+            case MotionEvent.ACTION_POINTER_DOWN: {
+                ProcessInputDown(event);
+            }
+            break;
             case MotionEvent.ACTION_UP:
-                //Log.v("DEBUG:","ACTION_UP");
-                if(primaryButton != null)
-                {
-                    primaryButton.SetPressed(false);
-                    primaryButton = null;
-                }
-                //RightButton.SetPressed(false);
-                //LeftButton.SetPressed(false);
-                //AttackButton.SetPressed(false);
-                //JumpButton.SetPressed(false);
+            case MotionEvent.ACTION_POINTER_UP:
+                ProcessInputUp(event);
+                break;
+            case MotionEvent.ACTION_MOVE:
+                ProcessInputMove(event);
                 break;
         }
-
         return true;
     }
 }

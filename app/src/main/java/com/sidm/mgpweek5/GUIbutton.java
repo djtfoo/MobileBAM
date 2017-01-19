@@ -12,10 +12,13 @@ public class GUIbutton {
     private boolean Pressed;
     private Bitmap bm;
     private Bitmap bm_pressed;
+    public int PointerIndex;
+
     GUIbutton()
     {
         Size = 1;
         Pos = new Vector2();
+        PointerIndex = -1;
         Pressed = false;
     }
 

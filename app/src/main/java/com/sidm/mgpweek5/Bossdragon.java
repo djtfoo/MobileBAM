@@ -21,7 +21,6 @@ public class Bossdragon extends Entity {
 
         BOSSDRAGON_STATE(int value) { this.value = value; }
         public int GetValue() { return value; }
-
     }
 
     private BOSSDRAGON_STATE state;
