@@ -165,11 +165,11 @@ public class Player {
         int X;
         if (flipSprites)    // facing left
         {
-            X = (int)((position.x - 0.1f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x + 0.3f * map.tileSize_X) / map.tileSize_X);
         }
         else
         {
-            X = (int)((position.x + 0.1f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - 0.3f * map.tileSize_X) / map.tileSize_X);
         }
         int Y = (int)((position.y + map.tileSize_Y) / map.tileSize_Y);
 
@@ -211,7 +211,7 @@ public class Player {
         }
         else
         {
-            X = (int)((position.x + 0.1f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - 0.3f * map.tileSize_X) / map.tileSize_X);
         }
         int Y = (int)((newPosY - map.tileSize_Y + (0.9f * map.tileSize_Y)) / map.tileSize_Y);
 
@@ -229,11 +229,11 @@ public class Player {
         int X;
         if (flipSprites)    // facing left
         {
-            X = (int)((position.x - 0.1f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x + 0.3f * map.tileSize_X) / map.tileSize_X);
         }
         else
         {
-            X = (int)((position.x + 0.1f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - 0.3f * map.tileSize_X) / map.tileSize_X);
         }
         int Y = (int)((newPosY + map.tileSize_Y) / map.tileSize_Y);
 
