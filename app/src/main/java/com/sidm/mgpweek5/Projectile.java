@@ -48,6 +48,11 @@ public class Projectile {
         return velocity;
     }
 
+    // Init
+    public void Init() {
+
+    }
+
     // Update
     public void Update() {
 

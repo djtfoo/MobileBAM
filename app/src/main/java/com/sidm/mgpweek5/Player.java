@@ -36,11 +36,11 @@ public class Player {
     private final int maxHP = 100;
 
     // for movement
-    private final int SPEED = 600;
+    private int SPEED;  // movement speed
     // jump
     private boolean isInAir = false;
     private float jumpSpeed = 0.f;
-    private final float gravity = 500.f;
+    private float gravity;
 
     // Sprite animation
     public Spriteanimation[] spriteArray;
@@ -55,7 +55,7 @@ public class Player {
         spriteArray = new Spriteanimation[PLAYER_STATE.STATES_TOTAL.GetValue()];
     }
 
-    public void Init(Context context, int screenWidth, int screenHeight) {
+    public void Init(Context context, Tilemap map, int screenWidth, int screenHeight) {
         // Load sprites
         spriteArray[Player.PLAYER_STATE.IDLE.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
@@ -93,6 +93,9 @@ public class Player {
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_hurt),
                         screenWidth / 4 * 2, screenHeight / 5, true), 0, 0, 4, 2);
+
+        SPEED = (int)(map.tileSize_X) * 5;
+        gravity = map.tileSize_Y * 4.2f;
     }
 
     // Position
@@ -165,7 +168,7 @@ public class Player {
         }
         else
         {
-            X = (int)((position.x - 0.4f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - 0.3f * map.tileSize_X) / map.tileSize_X);
         }
         int Y = (int)((position.y + map.tileSize_Y) / map.tileSize_Y);
 
@@ -178,11 +181,11 @@ public class Player {
         return isInAir;
     }
 
-    public void Jump() {
+    public void Jump(Tilemap map) {
         if (!isInAir)
         {
             isInAir = true;
-            jumpSpeed = -600.f;
+            jumpSpeed = map.tileSize_Y * -5.f;
         }
     }
 
