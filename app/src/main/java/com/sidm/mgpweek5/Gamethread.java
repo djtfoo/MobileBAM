@@ -1,6 +1,7 @@
 package com.sidm.mgpweek5;
 
 import android.graphics.Canvas;
+import android.util.Log;
 import android.view.SurfaceHolder;
 
 /**
@@ -78,6 +79,9 @@ public class Gamethread extends Thread {
         while (isRun){
             //Update game state and render state to the screen
             Canvas c = null;
+            calculateFPS();
+
+            Log.v("deltatime:", Float.toString(dt));
             try {
                 c = this.holder.lockCanvas();
                 synchronized(holder){
@@ -104,7 +108,7 @@ public class Gamethread extends Thread {
                     holder.unlockCanvasAndPost(c);
                 }
             }
-            calculateFPS();
+            //calculateFPS();
         }
 
     }

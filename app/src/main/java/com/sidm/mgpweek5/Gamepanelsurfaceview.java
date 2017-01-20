@@ -85,12 +85,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     // Pause
     private boolean isPaused = false;
-    private Object PauseB1;
-    private Object PauseB2;
-    Bitmap pauseBitmap;
 
     // Variable for Game State check
-    private short GameState;
+    private short GameState = 0;
 
     // Week 9 Sound
     Soundmanager soundmanager;
@@ -158,7 +155,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //Point1 = new TouchPoint();
 
         // Init player and entities
-        player.Init(context, Screenwidth, Screenheight);
+        player.Init(context, map, Screenwidth, Screenheight);
         player.SetPosition(2 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
         bossdragon.Init(context, Screenwidth, Screenheight);
         bossdragon.SetPosition(Screenwidth / 2, Screenheight / 7 * 4);
@@ -232,12 +229,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 activityTracker.startActivity(intent);
             }
         });
-
-        // Week 9 Pause
-        PauseB1 = new Object(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause)),
-                (int) (Screenwidth / 15), (int) (Screenheight / 10), true), Screenwidth / 2, 20);
-        PauseB2 = new Object(Bitmap.createScaledBitmap((BitmapFactory.decodeResource(getResources(), R.drawable.pause1)),
-                (int) (Screenwidth / 15), (int) (Screenheight / 10), true), Screenwidth / 2, 20);
     }
 
     // Week 13 Toast
@@ -252,12 +243,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         if (isPaused)   // game is currently paused
         {
             isPaused = false;
-            pauseBitmap = PauseButton.GetBitMap();
-            myThread.unPause();
-        } else {
+            GameState = 0;  // the gameplay state
+            //myThread.unPause();
+        }
+        else {
             isPaused = true;
-            pauseBitmap = PauseButton.GetBitMapPressed();
-            myThread.pause();
+            GameState = 1;  // the pause state
+            //myThread.pause();
         }
     }
 
@@ -277,15 +269,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         JumpButton.SetButtonSize(buttonSize);
         SwitchButton.SetButtonSize(buttonSize);
         AttackButton.SetButtonSize((int) (buttonSize * 1.45));
-        PauseButton.SetButtonSize((int) map.tileSize_X);
+        PauseButton.SetButtonSize((int)(0.9f * map.tileSize_X));
 
         LeftButton.SetButtonPos((int) (map.tileSize_X), (int) (7.8f * map.tileSize_Y));
         RightButton.SetButtonPos((int) (map.tileSize_X) + (int) (Screenwidth * 0.02) + buttonSize, (int) (7.8f * map.tileSize_Y));
         JumpButton.SetButtonPos((int) ((map.GetCols() - 3.5f) * map.tileSize_X), (int) (7.8f * map.tileSize_Y));
         AttackButton.SetButtonPos((int) ((map.GetCols() - 2) * map.tileSize_X), (int) (7.3f * map.tileSize_Y));
-        PauseButton.SetButtonPos((int) ((map.GetCols() / 2 - 0.5f) * map.tileSize_X), (int) (0.2f * map.tileSize_Y));
-        SwitchButton.SetButtonPos((int) (map.tileSize_X), (int) (10.f * map.tileSize_Y));
-
+        PauseButton.SetButtonPos((int) ((map.GetCols() / 2 - 0.45f) * map.tileSize_X), (int) (0.2f * map.tileSize_Y));
+        SwitchButton.SetButtonPos((int) (0.3f * map.tileSize_X), (int) (5.f * map.tileSize_Y));
 
         LeftButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
         RightButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
@@ -293,7 +284,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         AttackButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true));
         PauseButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause), PauseButton.GetButtonSize(), PauseButton.GetButtonSize(), true));
         SwitchButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.switchbutton), SwitchButton.GetButtonSize(), SwitchButton.GetButtonSize(), true));
-        SwitchButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.switchbutton), SwitchButton.GetButtonSize(), SwitchButton.GetButtonSize(), true));
 
         LeftButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton_pressed), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
         RightButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton_pressed), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
@@ -301,10 +291,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         AttackButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton_pressed), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true));
         PauseButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause1), PauseButton.GetButtonSize(), PauseButton.GetButtonSize(), true));
         SwitchButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.switchbutton_pressed), SwitchButton.GetButtonSize(), SwitchButton.GetButtonSize(), true));
-
-        // Init pause Bitmap
-        pauseBitmap = PauseButton.GetBitMap();
-
 
         Buttons = new GUIbutton[6];
         Buttons[0] = LeftButton;
@@ -316,25 +302,35 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     }
 
     public void RenderButtons(Canvas canvas) {
-        if (LeftButton.isPressed())
+        if (!isPaused && LeftButton.isPressed())
             canvas.drawBitmap(LeftButton.GetBitMapPressed(), (int) (LeftButton.GetPosition().x), (int) (LeftButton.GetPosition().y), null);
         else
             canvas.drawBitmap(LeftButton.GetBitMap(), (int) (LeftButton.GetPosition().x), (int) (LeftButton.GetPosition().y), null);
 
-        if (RightButton.isPressed())
+        if (!isPaused && RightButton.isPressed())
             canvas.drawBitmap(RightButton.GetBitMapPressed(), (int) (RightButton.GetPosition().x), (int) (RightButton.GetPosition().y), null);
         else
             canvas.drawBitmap(RightButton.GetBitMap(), (int) (RightButton.GetPosition().x), (int) (RightButton.GetPosition().y), null);
 
-        if (AttackButton.isPressed())
+        if (!isPaused && AttackButton.isPressed())
             canvas.drawBitmap(AttackButton.GetBitMapPressed(), (int) (AttackButton.GetPosition().x), (int) (AttackButton.GetPosition().y), null);
         else
             canvas.drawBitmap(AttackButton.GetBitMap(), (int) (AttackButton.GetPosition().x), (int) (AttackButton.GetPosition().y), null);
 
-        if (JumpButton.isPressed())
+        if (!isPaused && JumpButton.isPressed())
             canvas.drawBitmap(JumpButton.GetBitMapPressed(), (int) (JumpButton.GetPosition().x), (int) (JumpButton.GetPosition().y), null);
         else
             canvas.drawBitmap(JumpButton.GetBitMap(), (int) (JumpButton.GetPosition().x), (int) (JumpButton.GetPosition().y), null);
+
+        if (!isPaused && SwitchButton.isPressed())
+            canvas.drawBitmap(SwitchButton.GetBitMapPressed(), (int) (SwitchButton.GetPosition().x), (int) (SwitchButton.GetPosition().y), null);
+        else
+            canvas.drawBitmap(SwitchButton.GetBitMap(), (int) (SwitchButton.GetPosition().x), (int) (SwitchButton.GetPosition().y), null);
+
+        if (isPaused)
+            canvas.drawBitmap(PauseButton.GetBitMapPressed(), (int) (PauseButton.GetPosition().x), (int) (PauseButton.GetPosition().y), null);
+        else
+            canvas.drawBitmap(PauseButton.GetBitMap(), (int) (PauseButton.GetPosition().x), (int) (PauseButton.GetPosition().y), null);
     }
 
     //must implement inherited abstract methods
@@ -446,7 +442,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         player.spriteArray[player.GetState().GetValue()].draw(canvas);
 
         // HUD
-        RenderPause(canvas);
         RenderButtons(canvas);
         // Player
         canvas.drawBitmap(playerProfile, 0.5f * map.tileSize_X, 0.5f * map.tileSize_Y, null);
@@ -460,17 +455,21 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
         //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
 
-        if (RightButton.isPressed()) {
-            RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, textSize);
-        }
-        if (LeftButton.isPressed()) {
-            RenderTextOnScreen(canvas, "Left Button Pressed", 130, 325, textSize);
-        }
-        if (AttackButton.isPressed()) {
-            RenderTextOnScreen(canvas, "Attack Button Pressed", 130, 375, textSize);
-        }
-        if (JumpButton.isPressed()) {
-            RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, textSize);
+        // DEBUG TEXT
+        if (!isPaused)
+        {
+            if (RightButton.isPressed()) {
+                RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, textSize);
+            }
+            if (LeftButton.isPressed()) {
+                RenderTextOnScreen(canvas, "Left Button Pressed", 130, 325, textSize);
+            }
+            if (AttackButton.isPressed()) {
+                RenderTextOnScreen(canvas, "Attack Button Pressed", 130, 375, textSize);
+            }
+            if (JumpButton.isPressed()) {
+                RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, textSize);
+            }
         }
 
         // Week 14 Accelerometer test ball
@@ -511,7 +510,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
 
                 if (JumpButton.isPressed()) {
-                    player.Jump();
+                    player.Jump(map);
                 }
 
                 if (AttackButton.isPressed()) {
@@ -539,8 +538,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     showAlert = false;
                     hasShownAlert = true;
                 }
+
+                // Pause button
+                if (!isPaused && PauseButton.isPressed())
+                {
+                    PauseButtonPressed();
+                }
+
+                break;
             }
-            break;
+           case 1:
+               // Pause button
+               if (isPaused && PauseButton.isPressed())
+               {
+                   PauseButtonPressed();
+               }
+               break;
         }
     }
 
@@ -550,6 +563,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             case 0:
                 RenderGameplay(canvas);
                 break;
+
+            case 1:
+                RenderGameplay(canvas);
+                RenderPause(canvas);
         }
     }
 
@@ -565,20 +582,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawText(text, posX, posY, paint);
     }
 
-    public void RenderPause(Canvas canvas) {
-        // Draw Pause button
-        //if (isPaused) {
-        //    canvas.drawBitmap(pauseBitmap, (int)(PauseButton.GetPosition().x), (int)(PauseButton.GetPosition().y), null);
-        //}
-        //else {
-        //    canvas.drawBitmap(pauseBitmap, (int)(PauseButton.GetPosition().x), (int)(PauseButton.GetPosition().y), null);
-        //}
-
-        canvas.drawBitmap(pauseBitmap, (int) (PauseButton.GetPosition().x), (int) (PauseButton.GetPosition().y), null);
-
-        if (isPaused) {
-            RenderTextOnScreen(canvas, "Game Paused", (int) (3.5f * map.tileSize_X), (int) (0.4f * map.tileSize_Y), textSize);
-        }
+    public void RenderPause(Canvas canvas)
+    {
+        RenderTextOnScreen(canvas, "Game Paused", (int) ((map.GetCols() / 2 + 1) * map.tileSize_X), (int) (0.4f * map.tileSize_Y), textSize);
     }
 
 
@@ -662,14 +668,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         int pointerID = event.getActionIndex();
         if(pointerID < 0)
             return;
-        Vector2 CurrenTouchPos = new Vector2(
+        Vector2 CurrentTouchPos = new Vector2(
                 event.getX(pointerID),
                 event.getY(pointerID)
         );
 
         for(int i = 0; i < 6; i++)
         {
-            if(CheckButtonPressed(CurrenTouchPos, Buttons[i]))
+            if(CheckButtonPressed(CurrentTouchPos, Buttons[i]))
             {
                 Buttons[i].SetPressed(true);
                 Buttons[i].PointerIndex = pointerID;
