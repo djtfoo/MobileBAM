@@ -17,13 +17,11 @@ import android.hardware.SensorManager;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.os.Vibrator;
 import android.widget.EditText;
-import android.widget.Switch;
 import android.widget.Toast;
 
 import android.hardware.Sensor;
@@ -254,12 +252,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     }
 
     public void InitButtons() {
-        RightButton = new GUIbutton();
-        LeftButton = new GUIbutton();
-        AttackButton = new GUIbutton();
-        JumpButton = new GUIbutton();
-        PauseButton = new GUIbutton();
-        SwitchButton = new GUIbutton();
+        RightButton = new GUIbutton("Right");
+        LeftButton = new GUIbutton("Left");
+        AttackButton = new GUIbutton("Attack");
+        JumpButton = new GUIbutton("Jump");
+        PauseButton = new GUIbutton("Pause");
+        SwitchButton = new GUIbutton("Switch");
         primaryButton = null;
 
         int buttonSize = (int) (0.7f * map.tileSize_Y * ((float) Screenwidth / (float) Screenheight));
@@ -492,41 +490,48 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     bgX = 0;
                 }
 
-                // make sprite animate
-                player.spriteArray[player.GetState().GetValue()].update(dt_l);
+                // update sprite - make sprite animate
+                //player.spriteArray[player.GetState().GetValue()].update(dt_l);
+                player.spriteArray[player.GetState().GetValue()].update(dt);
                 bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(dt_l);
 
+                // Do attack things here
+                if (player.GetAttackState() != Player.PLAYER_STATE.IDLE) {
+                    player.DoMeleeAttack(this);
+                }
                 // get key press
-                if (RightButton.isPressed()) {
-                    player.SetState(Player.PLAYER_STATE.MOVE);
-                    player.MoveRight(deltaTime, map);
-                    player.SetFlipSprite(false);
-                } else if (LeftButton.isPressed()) {
-                    player.SetState(Player.PLAYER_STATE.MOVE);
-                    player.MoveLeft(deltaTime, map);
-                    player.SetFlipSprite(true);
-                } else {
-                    player.SetState(Player.PLAYER_STATE.IDLE);
+                if (player.GetAttackState() == Player.PLAYER_STATE.IDLE || player.GetAttackState() == Player.PLAYER_STATE.JUMP_ATTACK)
+                {
+                    if (RightButton.isPressed()) {
+                        if (player.GetAttackState() != Player.PLAYER_STATE.JUMP_ATTACK)
+                            player.SetState(Player.PLAYER_STATE.MOVE);
+
+                        player.MoveRight(deltaTime, map);
+                        player.SetFlipSprite(false);
+                    } else if (LeftButton.isPressed()) {
+                        if (player.GetAttackState() != Player.PLAYER_STATE.JUMP_ATTACK)
+                            player.SetState(Player.PLAYER_STATE.MOVE);
+                        player.MoveLeft(deltaTime, map);
+                        player.SetFlipSprite(true);
+                    } else {    // player not pressing a moving button
+                        if (player.GetAttackState() == Player.PLAYER_STATE.IDLE) {
+                            player.SetState(Player.PLAYER_STATE.IDLE);
+                        }
+                    }
                 }
 
                 if (JumpButton.isPressed()) {
                     player.Jump(map);
                 }
 
-                if (AttackButton.isPressed()) {
-                    // Do attack things here
-                    toast.show();
-                    soundmanager.PlaySFXSlash1();
-                    bossdragon.TakeDamage(10);
-                }
-
                 // update player movement
                 player.CheckIsInAir(map);
                 if (player.IsInAir()) {
-                    player.SetState(Player.PLAYER_STATE.JUMP);
                     player.UpdateJump(deltaTime, map);
                 }
+
                 player.FlipSpriteAnimation();
+
 
                 if (bossdragon.IsDead()) {
                     showAlert = true;
@@ -539,20 +544,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     hasShownAlert = true;
                 }
 
-                // Pause button
-                if (!isPaused && PauseButton.isPressed())
-                {
-                    PauseButtonPressed();
-                }
-
                 break;
             }
            case 1:
-               // Pause button
-               if (isPaused && PauseButton.isPressed())
-               {
-                   PauseButtonPressed();
-               }
+
                break;
         }
     }
@@ -616,8 +611,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     vibrator.vibrate(50);
                 }
+                if (!Buttons[i].isPressed())
+                {
+                    Buttons[i].SetPressed(true);
+
+                    // Activate unique effects of button type
+                    if (Buttons[i].GetName() == "Attack" && player.GetAttackState() == Player.PLAYER_STATE.IDLE)
+                    {
+                        player.SetStartMeleeAttack();
+                    }
+                    else if (Buttons[i].GetName() == "Pause")
+                    {
+                        PauseButtonPressed();
+                    }
+                }
+
                 Buttons[i].PointerIndex = PointerID;
-                Buttons[i].SetPressed(true);
             }
         }
     }
@@ -628,10 +637,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         int PointerID = event.getActionIndex();
         if(PointerID < 0)
             return;
-        Log.v("STATE", Integer.toString(PointerID));
+        //Log.v("STATE", Integer.toString(PointerID));
 
         for (int i = 0; i < 6; i++) {
-            Log.v("Buttons", Integer.toString(Buttons[i].PointerIndex));
+            //Log.v("Buttons", Integer.toString(Buttons[i].PointerIndex));
             if (Buttons[i].PointerIndex == PointerID)
             {
                 Buttons[i].PointerIndex = -1;
@@ -677,9 +686,20 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         {
             if(CheckButtonPressed(CurrentTouchPos, Buttons[i]))
             {
-                Buttons[i].SetPressed(true);
+                if (!Buttons[i].isPressed())
+                {
+                    Buttons[i].SetPressed(true);
+
+                    // Activate unique effects of button type
+                    if (Buttons[i].GetName() == "Attack")
+                    {
+                        player.SetStartMeleeAttack();
+                    }
+                }
+
                 Buttons[i].PointerIndex = pointerID;
-            }else
+            }
+            else
             {
                 if(Buttons[i].PointerIndex == pointerID)
                 {

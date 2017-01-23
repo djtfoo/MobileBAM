@@ -12,6 +12,7 @@ import android.graphics.Rect;
 public class Spriteanimation {
 
     private Bitmap bitmap; // the animation sequence
+    private Bitmap flippedBitmap;   // reflected version of Bitmap
     private Rect sourceRect; // the rectangle to be drawn from the animation bitmap
     private int frame; // number of frames in animation
     private int currentFrame; // the current frame
@@ -22,6 +23,9 @@ public class Spriteanimation {
     private int spriteHeight; // the height of the sprite
 
     private boolean flipSprites;    // reflect the sprites
+
+    private float frameTimerFloat;  // the timer between each frame
+    private float framePeriodFloat; // frame period in seconds
 
     private int x; // the X coordinate of the object (top left of the image)
     private int y; // the Y coordinate of the object (top left of the image)
@@ -40,6 +44,15 @@ public class Spriteanimation {
         sourceRect = new Rect(0, 0, spriteWidth, spriteHeight);
         framePeriod = 1000 / fps;
         frameTicker = 01;
+
+        frameTimerFloat = 0.f;
+        framePeriodFloat = (float)framePeriod / 1000;
+
+        Matrix matrix = new Matrix();
+        matrix.preScale(-1, 1);
+        flippedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                spriteWidth * frame, spriteHeight, matrix, false);
+
     }
 
     public Bitmap getBitmap() {
@@ -73,6 +86,12 @@ public class Spriteanimation {
     public void setCurrentFrame(int currentFrame) {
         this.currentFrame = currentFrame;
     }
+
+    public void resetAnimation()
+    {
+        setCurrentFrame(0);
+        frameTimerFloat = 0.f;
+    };
 
     public int getFramePeriod() {
         return framePeriod;
@@ -114,6 +133,7 @@ public class Spriteanimation {
         this.y = y - spriteHeight / 2;
     }
 
+    // using frameTicker
     public void update(long gameTime) {
         if (gameTime > frameTicker + framePeriod) {
             frameTicker = gameTime;
@@ -128,22 +148,37 @@ public class Spriteanimation {
         this.sourceRect.right = this.sourceRect.left + spriteWidth;
     }
 
+    // using spriteTimer
+    public void update(float dt) {
+        frameTimerFloat += dt;
+        if (frameTimerFloat > framePeriodFloat) {
+            frameTimerFloat = 0.f;
+            // increment the frame
+            currentFrame++;
+            if (currentFrame >= frame) {
+                currentFrame = 0;
+            }
+        }
+    }
+
     public void draw(Canvas canvas) {
         // where to draw the sprite
         Rect destRect = new Rect(getX(), getY(), getX() + spriteWidth, getY() + spriteHeight);
         if (flipSprites)
         {
-            Matrix matrix = new Matrix();
-            matrix.preScale(-1, 1);
-            Bitmap reflectionImage = Bitmap.createBitmap(bitmap, 0,
-                    0, spriteWidth * frame, spriteHeight, matrix, false);
+            // define the rectangle to cut out sprite
+            int flippedFrame = (frame - currentFrame);
+            this.sourceRect.left = (flippedFrame - 1) * spriteWidth;
+            this.sourceRect.right = this.sourceRect.left + spriteWidth;
 
-            //sourceRect = ;
-
-            canvas.drawBitmap(reflectionImage, sourceRect, destRect, null);
+            canvas.drawBitmap(flippedBitmap, sourceRect, destRect, null);
         }
         else
         {
+            // define the rectangle to cut out sprite
+            this.sourceRect.left = currentFrame * spriteWidth;
+            this.sourceRect.right = this.sourceRect.left + spriteWidth;
+
             canvas.drawBitmap(bitmap, sourceRect, destRect, null);
             //destRect = new Rect(getX(), getY(), getX() + spriteWidth, getY() + spriteHeight);
         }

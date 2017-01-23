@@ -13,13 +13,15 @@ public class GUIbutton {
     private Bitmap bm;
     private Bitmap bm_pressed;
     public int PointerIndex;
+    private String name;
 
-    GUIbutton()
+    GUIbutton(String name)
     {
         Size = 1;
         Pos = new Vector2();
         PointerIndex = -1;
         Pressed = false;
+        SetName(name);
     }
 
     GUIbutton(int Size, Vector2 Pos)
@@ -78,4 +80,8 @@ public class GUIbutton {
     {
         this.Pressed = status;
     }
+
+    public void SetName(String name) { this.name = name; }
+
+    public String GetName() { return name; }
 }

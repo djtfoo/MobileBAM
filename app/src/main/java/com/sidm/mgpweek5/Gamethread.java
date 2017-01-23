@@ -81,7 +81,7 @@ public class Gamethread extends Thread {
             Canvas c = null;
             calculateFPS();
 
-            Log.v("deltatime:", Float.toString(dt));
+            //Log.v("deltatime:", Float.toString(dt));
             try {
                 c = this.holder.lockCanvas();
                 synchronized(holder){

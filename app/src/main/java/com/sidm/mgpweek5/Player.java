@@ -32,6 +32,7 @@ public class Player {
 
     private Vector2 position = new Vector2();
     private PLAYER_STATE state;
+    private PLAYER_STATE attackState;
     private int hp;
     private final int maxHP = 100;
 
@@ -42,6 +43,11 @@ public class Player {
     private float jumpSpeed = 0.f;
     private float gravity;
 
+    private boolean bStartedAttack = false;
+    private boolean bFinishedFrame0 = false;
+    private boolean bFinishedAttackAnimation = false;
+    private boolean bAttackButtonPressed = false;
+
     // Sprite animation
     public Spriteanimation[] spriteArray;
     private boolean flipSprites;
@@ -50,6 +56,7 @@ public class Player {
     public Player() {
         position.SetZero();
         state = PLAYER_STATE.MOVE;
+        attackState = PLAYER_STATE.IDLE;
         hp = maxHP;
 
         spriteArray = new Spriteanimation[PLAYER_STATE.STATES_TOTAL.GetValue()];
@@ -57,39 +64,39 @@ public class Player {
 
     public void Init(Context context, Tilemap map, int screenWidth, int screenHeight) {
         // Load sprites
-        spriteArray[Player.PLAYER_STATE.IDLE.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.IDLE.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_idle),
                         screenWidth / 4 * 2, screenHeight / 5, true), 0, 0, 4, 2);
-        spriteArray[Player.PLAYER_STATE.MOVE.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.MOVE.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_moving),
                         screenWidth / 4 * 6, screenHeight / 5, true), 0, 0, 4, 6);
-        spriteArray[Player.PLAYER_STATE.JUMP.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.JUMP.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_jump),
                         screenWidth / 4, screenHeight / 5, true), 0, 0, 4, 1);
-        spriteArray[Player.PLAYER_STATE.MELEE_1.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.MELEE_1.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_melee1),
                         screenWidth / 4 * 3, screenHeight / 5, true), 0, 0, 4, 3);
-        spriteArray[Player.PLAYER_STATE.MELEE_2.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.MELEE_2.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_melee2),
                         screenWidth / 4 * 3, screenHeight / 5, true), 0, 0, 4, 3);
-        spriteArray[Player.PLAYER_STATE.MELEE_3.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.MELEE_3.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_melee3),
                         screenWidth / 4 * 3, screenHeight / 5, true), 0, 0, 4, 3);
-        spriteArray[Player.PLAYER_STATE.JUMP_ATTACK.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.JUMP_ATTACK.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_jumpattack),
                         screenWidth / 4 * 3, screenHeight / 5, true), 0, 0, 4, 3);
-        spriteArray[Player.PLAYER_STATE.RANGED_ATTACK.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_attackranged),
                         screenWidth / 4 * 5, screenHeight / 5, true), 0, 0, 4, 5);
-        spriteArray[Player.PLAYER_STATE.HURT.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
+        spriteArray[PLAYER_STATE.HURT.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
                                 (context.getResources(), R.drawable.player_hurt),
                         screenWidth / 4 * 2, screenHeight / 5, true), 0, 0, 4, 2);
@@ -182,7 +189,7 @@ public class Player {
     }
 
     public void Jump(Tilemap map) {
-        if (!isInAir)
+        if (!isInAir && this.attackState == PLAYER_STATE.IDLE)
         {
             isInAir = true;
             jumpSpeed = map.tileSize_Y * -5.f;
@@ -190,6 +197,12 @@ public class Player {
     }
 
     public void UpdateJump(float deltaTime, Tilemap map) {
+        // Jump Sprites
+        if (attackState == PLAYER_STATE.IDLE)
+            SetState(PLAYER_STATE.JUMP);
+        //else
+        //    SetState(PLAYER_STATE.JUMP_ATTACK);
+
         jumpSpeed += gravity * deltaTime;
 
         if (jumpSpeed <= 0.f) {
@@ -278,9 +291,9 @@ public class Player {
         return state;
     }
 
-    public void SetState(PLAYER_STATE state) {
-        this.state = state;
-    }
+    public void SetState(PLAYER_STATE state) { this.state = state; }
+
+    public PLAYER_STATE GetAttackState() { return attackState; }
 
     public boolean GetFlipSprite() { return flipSprites; }
 
@@ -294,9 +307,70 @@ public class Player {
         spriteArray[state.value].SetFlipSprites(flipSprites);
     }
 
-    // Attack
-    public void DoMeleeAttack() {
+    public void SetStartMeleeAttack() {
+        this.bStartedAttack = true;
+        this.bFinishedFrame0 = false;
+        this.bFinishedAttackAnimation = false;
+        this.bAttackButtonPressed = false;
 
+        if (attackState == PLAYER_STATE.IDLE || attackState == PLAYER_STATE.MELEE_3)
+        {
+            if (this.state == PLAYER_STATE.JUMP)
+                attackState = PLAYER_STATE.JUMP_ATTACK;
+            else
+                attackState = PLAYER_STATE.MELEE_1;
+            SetState(attackState);
+        }
+        else if (attackState == PLAYER_STATE.JUMP_ATTACK)
+        {
+            if (isInAir)
+                attackState = PLAYER_STATE.JUMP_ATTACK;
+            else
+                attackState = PLAYER_STATE.MELEE_1;
+            SetState(attackState);
+        }
+        else
+        {
+            attackState = PLAYER_STATE.values()[attackState.ordinal() + 1];
+            SetState(attackState);
+        }
+
+        spriteArray[attackState.GetValue()].resetAnimation();
+    }
+
+    // Attack
+    public void DoMeleeAttack(Gamepanelsurfaceview gameview) {
+        if (bStartedAttack)
+        {
+            gameview.toast.show();
+            gameview.soundmanager.PlaySFXSlash1();
+            gameview.bossdragon.TakeDamage(50);
+            bStartedAttack = false;
+        }
+
+        else if (bFinishedFrame0 && spriteArray[attackState.GetValue()].getCurrentFrame() == 0) {
+            bFinishedAttackAnimation = true;
+        }
+        else if (spriteArray[attackState.GetValue()].getCurrentFrame() == spriteArray[attackState.GetValue()].getFrame() - 1)
+        {
+            // at last frame, did the player press attack button
+            if (gameview.AttackButton.isPressed())
+                bAttackButtonPressed = true;
+        }
+        else if (spriteArray[attackState.GetValue()].getCurrentFrame() > 0) {
+            bFinishedFrame0 = true;
+        }
+
+        if (bFinishedAttackAnimation)
+        {
+            if (bAttackButtonPressed)
+                SetStartMeleeAttack();
+            else
+            {
+                attackState = PLAYER_STATE.IDLE;
+                SetState(PLAYER_STATE.IDLE);
+            }
+        }
     }
 
     public void DoRangedAttack() {
