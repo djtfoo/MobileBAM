@@ -43,4 +43,10 @@ public class Bossdragon extends Entity {
     BOSSDRAGON_STATE GetState() {
         return state;
     }
+
+    @Override
+    public void Update(float dt)
+    {
+        spriteArray[state.GetValue()].update(dt);
+    }
 }

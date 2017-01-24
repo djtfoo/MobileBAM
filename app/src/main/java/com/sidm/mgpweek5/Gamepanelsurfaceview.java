@@ -27,6 +27,8 @@ import android.widget.Toast;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 
+import java.util.Vector;
+
 /**
  * Created by Foo on 24/11/2016.
  */
@@ -69,6 +71,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     Tilemap map = new Tilemap();
     Player player = new Player();
     Bossdragon bossdragon = new Bossdragon();
+
+    TowerShieldgenerator testsg = new TowerShieldgenerator(100);
 
     private final int ButtonCount = 6;
     private GUIbutton Buttons[];
@@ -152,11 +156,17 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         InitButtons();
         //Point1 = new TouchPoint();
 
-        // Init player and entities
+        // Init Player and GameObjects/Entities
         player.Init(context, map, Screenwidth, Screenheight);
         player.SetPosition(2 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
         bossdragon.Init(context, Screenwidth, Screenheight);
         bossdragon.SetPosition(Screenwidth / 2, Screenheight / 7 * 4);
+
+        //Gameobject.goList.add(bossdragon);
+
+        testsg.Init(context, Screenwidth, Screenheight);
+        testsg.SetPosition(14 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
+        Gameobject.goList.add(testsg);
 
         // Create the game loop thread
         myThread = new Gamethread(getHolder(), this);
@@ -439,6 +449,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         player.spriteArray[player.GetState().GetValue()].setY((int) player.GetPosition().y);
         player.spriteArray[player.GetState().GetValue()].draw(canvas);
 
+        // draw the Gameobjects
+        for (int i = 0; i < Gameobject.goList.size(); ++i)
+        {
+            Gameobject go = Gameobject.goList.get(i);
+
+            go.spriteArray[0].setX((int) go.GetPosition().x);
+            go.spriteArray[0].setY((int) go.GetPosition().y);
+            go.spriteArray[0].draw(canvas);
+        }
+
         // HUD
         RenderButtons(canvas);
         // Player
@@ -494,6 +514,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 //player.spriteArray[player.GetState().GetValue()].update(dt_l);
                 player.spriteArray[player.GetState().GetValue()].update(dt);
                 bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(dt_l);
+
+                for (int i = 0; i < Gameobject.goList.size(); ++i)
+                {
+                    Gameobject.goList.get(i).Update(dt);
+                }
 
                 // Do attack things here
                 if (player.GetAttackState() != Player.PLAYER_STATE.IDLE) {

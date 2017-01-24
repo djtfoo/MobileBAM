@@ -1,7 +1,6 @@
 package com.sidm.mgpweek5;
 
 import android.graphics.Canvas;
-import android.util.Log;
 import android.view.SurfaceHolder;
 
 /**

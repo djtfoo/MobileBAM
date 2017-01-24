@@ -6,33 +6,18 @@ import android.graphics.Bitmap;
  * Created by Foo on 6/12/2016.
  */
 
-public class Projectile {
+public class Projectile extends Gameobject {
 
-    private Vector2 position = new Vector2();
     private Vector2 velocity = new Vector2();
 
-    private Bitmap image;
-
     private double lifespan;
+    private final double maxLifespan = 10.0;
 
     // Constructor
     public Projectile() {
-        position.SetZero();
+        super();
         velocity.SetZero();
         lifespan = 0.0;
-    }
-
-    // Position
-    public void SetPosition(float x, float y) {
-        position.Set(x, y);
-    }
-
-    public void SetPosition(Vector2 pos) {
-        position = pos;
-    }
-
-    public Vector2 GetPosition() {
-        return position;
     }
 
     // Velocity
@@ -54,7 +39,8 @@ public class Projectile {
     }
 
     // Update
-    public void Update() {
+    @Override
+    public void Update(float dt) {
 
     }
 
@@ -68,7 +54,7 @@ public class Projectile {
     }
 
     public boolean HasExpired() {
-        if (lifespan > 10.0)
+        if (maxLifespan > 10.0)
             return true;
 
         return false;
