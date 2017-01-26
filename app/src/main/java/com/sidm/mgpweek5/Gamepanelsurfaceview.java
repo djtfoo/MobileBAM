@@ -482,6 +482,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
         //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
 
+        if(RangedJoyStick.isPressed())
+        {
+            Vector2 Test = RangedJoyStick.GetValue().Multiply(1500);
+            Test = Test.Add(player.GetPosition());
+            Log.v("Value", "Line Pos: " + RangedJoyStick.GetValue().ToString() + " Player Pos: " + player.GetPosition().ToString());
+            Paint line = new Paint();
+            line.setARGB(100, 255, 0, 0);
+            line.setStyle(Paint.Style.STROKE);
+            line.setStrokeWidth(10);
+            canvas.drawLine(player.GetPosition().x, player.GetPosition().y, Test.x, Test.y, line);
+        }
+
         // DEBUG TEXT
         if (!isPaused)
         {
@@ -569,10 +581,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     SwitchButton.hold = false;
                 }
 
-                if(RangedJoyStick.isPressed())
+                if(RangedJoyStick.isPressed() && !RangedJoyStick.hold)
                 {
-                    //RangedJoyStick.GetValue();
-                    Log.v("Test", RangedJoyStick.GetValue().ToString());
+                    RangedJoyStick.hold = true;
+                }else if(!RangedJoyStick.isPressed() && RangedJoyStick.hold)
+                {
+                    //On Release
+                    RangedJoyStick.hold = false;
+                    Projectile temp = new Projectile();
+                    temp.Init(ball, Screenwidth, Screenheight);
+                    temp.SetPosition(new Vector2(player.GetPosition()));
+                    temp.SetVelocity(RangedJoyStick.GetValue().Multiply(10));
+                    Gameobject.goList.add(temp);
                 }
 
                 // update player movement
@@ -653,6 +673,26 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         int PointerID = event.getActionIndex();
         if(PointerID < 0)
             return;
+
+        Vector2 CurrentTouchPos = new Vector2(
+                event.getX(PointerID),
+                event.getY(PointerID)
+        );
+
+        if(RangedJoyStick.active && !RangedJoyStick.isPressed() && RangedJoyStick.PointerIndex == -1)
+        {
+            if(CheckButtonPressed(CurrentTouchPos, RangedJoyStick))
+            {
+                RangedJoyStick.SetPressed(true);
+                RangedJoyStick.PointerIndex = PointerID;
+                return;
+            }
+        }else if(RangedJoyStick.PointerIndex == PointerID)
+        {
+            RangedJoyStick.SetTouchPos(CurrentTouchPos);
+            return;
+        }
+
         for (int i = 0; i < ButtonCount; i++) {
             if(!Buttons[i].active || Buttons[i].isPressed())
                 continue;
@@ -740,6 +780,20 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 event.getY(pointerID)
         );
 
+
+        if(RangedJoyStick.active && !RangedJoyStick.isPressed() && RangedJoyStick.PointerIndex == -1)
+        {
+            if(CheckButtonPressed(CurrentTouchPos, RangedJoyStick))
+            {
+                RangedJoyStick.SetPressed(true);
+                RangedJoyStick.PointerIndex = pointerID;
+            }
+        }else if(RangedJoyStick.PointerIndex == pointerID)
+        {
+            RangedJoyStick.SetTouchPos(CurrentTouchPos);
+            return;
+        }
+
         for(int i = 0; i < ButtonCount; i++)
         {
             if(!Buttons[i].active)
@@ -767,18 +821,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     Buttons[i].SetPressed(false);
                 }
             }
-        }
-
-        if(RangedJoyStick.active && !RangedJoyStick.isPressed())
-        {
-           if(CheckButtonPressed(CurrentTouchPos, RangedJoyStick))
-           {
-               RangedJoyStick.SetPressed(true);
-               RangedJoyStick.PointerIndex = pointerID;
-           }
-        }else if(RangedJoyStick.PointerIndex == pointerID)
-        {
-            RangedJoyStick.SetTouchPos(CurrentTouchPos);
         }
     }
 

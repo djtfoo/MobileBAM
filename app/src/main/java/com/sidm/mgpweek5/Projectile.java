@@ -1,7 +1,8 @@
 package com.sidm.mgpweek5;
 
 import android.graphics.Bitmap;
-
+import android.graphics.BitmapFactory;
+import android.content.Context;
 /**
  * Created by Foo on 6/12/2016.
  */
@@ -18,6 +19,8 @@ public class Projectile extends Gameobject {
         super();
         velocity.SetZero();
         lifespan = 0.0;
+
+        spriteArray = new Spriteanimation[1];
     }
 
     // Velocity
@@ -34,14 +37,15 @@ public class Projectile extends Gameobject {
     }
 
     // Init
-    public void Init() {
-
+    public void Init(Bitmap ball, int screenWidth, int screenHeight) {
+        spriteArray[0] = new Spriteanimation(ball, 0, 0, 4, 1);
     }
 
     // Update
     @Override
-    public void Update(float dt) {
-
+    public void Update(float dt)
+    {
+        position.AddToThis(velocity.Multiply(dt));
     }
 
     // Lifespan

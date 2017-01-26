@@ -26,8 +26,16 @@ public class JoyStick extends GUIbutton
     Vector2 GetTouchPos()
     {
         Vector2 dir = touchPos.Subtract(Pos).GetNormalized();
-        Vector2 result = dir.Multiply(180);
-        result.AddToThis(Pos);
+        Vector2 Maximum = touchPos.Subtract(Pos).GetNormalized().Multiply(180);
+       Vector2 result;
+        if(touchPos.Subtract(Pos).GetLength() > 180)
+        {
+            result = Maximum;
+            result.AddToThis(Pos);
+        }else
+        {
+            result = touchPos;
+        }
         return result;
     }
 
