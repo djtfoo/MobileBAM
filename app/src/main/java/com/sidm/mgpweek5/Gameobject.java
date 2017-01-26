@@ -11,6 +11,8 @@ public class Gameobject {
     protected Vector2 position = new Vector2();
     public Spriteanimation[] spriteArray;   // Sprite animation
 
+    protected Collider AABBCollider = new Collider();
+
     // GameObject List
     public static Vector<Gameobject> goList = new Vector<Gameobject>();
 
@@ -36,4 +38,8 @@ public class Gameobject {
     public void Update(float dt) {
 
     }
+
+    // Getters & Setters
+    public Collider GetCollider() { return AABBCollider; }
+
 }

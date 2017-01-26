@@ -11,13 +11,15 @@ public class Collider {
     private Vector2 minAABB = new Vector2();
     private Vector2 maxAABB = new Vector2();
 
+    public Collider() { }
+
     public Collider(Vector2 min, Vector2 max)
     {
         minAABB = min;
         maxAABB = max;
     }
 
-    // Getters
+    // Getters & Setters
     public Vector2 GetMinAABB()
     {
         return minAABB;
@@ -26,5 +28,15 @@ public class Collider {
     public Vector2 GetMaxAABB()
     {
         return maxAABB;
+    }
+
+    public void SetMinAABB(Vector2 min)
+    {
+        minAABB = min;
+    }
+
+    public void SetMaxAABB(Vector2 max)
+    {
+        maxAABB = max;
     }
 }

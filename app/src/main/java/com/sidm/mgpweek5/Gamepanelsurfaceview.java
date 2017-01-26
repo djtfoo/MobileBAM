@@ -458,10 +458,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         for (int i = 0; i < Gameobject.goList.size(); ++i)
         {
             Gameobject go = Gameobject.goList.get(i);
-
-            go.spriteArray[0].setX((int) go.GetPosition().x);
-            go.spriteArray[0].setY((int) go.GetPosition().y);
-            go.spriteArray[0].draw(canvas);
+            DrawGameobject(canvas, go);
         }
 
         // draw the player
@@ -524,11 +521,28 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawRect(playerPos.x + min.x, playerPos.y + max.y,
                 playerPos.x + max.x, playerPos.y + min.y, paint);
 
-        //Rect rectangle = new Rect((int)(playerPos.x + min.x), (int)(playerPos.y + max.y), (int)(playerPos.x + max.x), (int)(playerPos.y + min.y));
-        //canvas.drawRect(playerPos.x + min.x, playerPos.y + max.y,
-        //        playerPos.x + max.x, playerPos.y + min.y, paint);
-
         // player's sword AABB
+    }
+
+    private void DrawGameobject(Canvas canvas, Gameobject go)
+    {
+        go.spriteArray[0].setX((int) go.GetPosition().x);
+        go.spriteArray[0].setY((int) go.GetPosition().y);
+        go.spriteArray[0].draw(canvas);
+
+        Paint paint = new Paint();
+
+        // go AABB
+        Vector2 min = go.GetCollider().GetMinAABB();
+        Vector2 max = go.GetCollider().GetMaxAABB();
+        Vector2 goPos = go.GetPosition();
+
+        paint.setColor(Color.RED);
+        paint.setStrokeWidth(5);
+        paint.setStyle(Paint.Style.STROKE);
+        // sequence is minX, maxY, maxX, minY, where min point is the top left corner
+        canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
+                goPos.x + max.x, goPos.y + min.y, paint);
     }
 
     //Update method to update the game play

@@ -48,7 +48,9 @@ public class Player {
     private boolean bFinishedAttackAnimation = false;
     private boolean bAttackButtonPressed = false;
 
-    private Collider AABBcollider;
+    private Collider AABBCollider;
+    private Collider unflippedAABBCollider;
+    private Collider flippedAABBCollider;
 
     // Sprite animation
     public Spriteanimation[] spriteArray;
@@ -107,7 +109,10 @@ public class Player {
         int spriteHeight = spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteHeight();
 
         //AABBcollider = new Collider(new Vector2(-spriteWidth * 0.15f, 0), new Vector2(spriteWidth * 0.05f, spriteHeight * 0.6f));
-        AABBcollider = new Collider(new Vector2(-spriteWidth * 0.15f, spriteHeight * 0.5f), new Vector2(spriteWidth * 0.05f, -spriteHeight * 0.05f));
+        unflippedAABBCollider = new Collider(new Vector2(-spriteWidth * 0.15f, spriteHeight * 0.5f), new Vector2(spriteWidth * 0.05f, -spriteHeight * 0.05f));
+        flippedAABBCollider = new Collider(new Vector2(-spriteWidth * 0.05f, spriteHeight * 0.5f), new Vector2(spriteWidth * 0.15f, -spriteHeight * 0.05f));
+
+        AABBCollider = unflippedAABBCollider;
 
         SPEED = (int)(map.tileSize_X) * 5;
         gravity = map.tileSize_Y * 4.2f;
@@ -127,7 +132,7 @@ public class Player {
     }
 
     // Collider
-    public Collider GetCollider() { return AABBcollider; }
+    public Collider GetCollider() { return AABBCollider; }
 
     // Update
     public void Update(double dt)
@@ -311,6 +316,10 @@ public class Player {
     public void SetFlipSprite(boolean flip)
     {
         flipSprites = flip;
+        if (flip)
+            AABBCollider = flippedAABBCollider;
+        else
+            AABBCollider = unflippedAABBCollider;
     }
 
     public void FlipSpriteAnimation()
