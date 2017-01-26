@@ -11,6 +11,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
@@ -453,20 +454,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // draw the tilemap
         drawTilemap(canvas);
 
-        // draw the player
-        player.spriteArray[player.GetState().GetValue()].setX((int) player.GetPosition().x);
-        player.spriteArray[player.GetState().GetValue()].setY((int) player.GetPosition().y);
-        player.spriteArray[player.GetState().GetValue()].draw(canvas);
-
         // draw the Gameobjects
         for (int i = 0; i < Gameobject.goList.size(); ++i)
         {
             Gameobject go = Gameobject.goList.get(i);
-
-            go.spriteArray[0].setX((int) go.GetPosition().x);
-            go.spriteArray[0].setY((int) go.GetPosition().y);
-            go.spriteArray[0].draw(canvas);
+            DrawGameobject(canvas, go);
         }
+
+        // draw the player
+        DrawPlayer(canvas);
 
         // HUD
         RenderButtons(canvas);
@@ -515,6 +511,51 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawBitmap(ball, ballCoord.x, ballCoord.y, null);
     }
 
+    // Draw functions
+    private void DrawPlayer(Canvas canvas)
+    {
+        // player sprite
+        player.spriteArray[player.GetState().GetValue()].setX((int) player.GetPosition().x);
+        player.spriteArray[player.GetState().GetValue()].setY((int) player.GetPosition().y);
+        player.spriteArray[player.GetState().GetValue()].draw(canvas);
+
+        // player AABB
+        Vector2 min = player.GetCollider().GetMinAABB();
+        Vector2 max = player.GetCollider().GetMaxAABB();
+        Vector2 playerPos = player.GetPosition();
+
+        Paint paint = new Paint();
+
+        paint.setColor(Color.RED);
+        paint.setStrokeWidth(5);
+        paint.setStyle(Paint.Style.STROKE);
+        // sequence is minX, maxY, maxX, minY, where min point is the top left corner
+        canvas.drawRect(playerPos.x + min.x, playerPos.y + max.y,
+                playerPos.x + max.x, playerPos.y + min.y, paint);
+
+        // player's sword AABB
+    }
+
+    private void DrawGameobject(Canvas canvas, Gameobject go)
+    {
+        go.spriteArray[0].setX((int) go.GetPosition().x);
+        go.spriteArray[0].setY((int) go.GetPosition().y);
+        go.spriteArray[0].draw(canvas);
+
+        Paint paint = new Paint();
+
+        // go AABB
+        Vector2 min = go.GetCollider().GetMinAABB();
+        Vector2 max = go.GetCollider().GetMaxAABB();
+        Vector2 goPos = go.GetPosition();
+
+        paint.setColor(Color.RED);
+        paint.setStrokeWidth(5);
+        paint.setStyle(Paint.Style.STROKE);
+        // sequence is minX, maxY, maxX, minY, where min point is the top left corner
+        canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
+                goPos.x + max.x, goPos.y + min.y, paint);
+    }
 
     //Update method to update the game play
     public void update(float dt, float fps) {
