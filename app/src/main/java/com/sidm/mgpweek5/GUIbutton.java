@@ -7,13 +7,15 @@ import android.graphics.Bitmap;
  */
 
 public class GUIbutton {
-    private int Size;
-    private Vector2 Pos;
-    private boolean Pressed;
-    private Bitmap bm;
-    private Bitmap bm_pressed;
+    protected int Size;
+    protected Vector2 Pos;
+    protected boolean Pressed;
+    public boolean hold;
+    protected Bitmap bm;
+    protected Bitmap bm_pressed;
     public int PointerIndex;
-    private String name;
+    protected String name;
+    public boolean active;
 
     GUIbutton(String name)
     {
@@ -22,12 +24,8 @@ public class GUIbutton {
         PointerIndex = -1;
         Pressed = false;
         SetName(name);
-    }
-
-    GUIbutton(int Size, Vector2 Pos)
-    {
-        this.Size = Size;
-        this.Pos = Pos;
+        hold = false;
+        active = true;
     }
 
     public void SetBitMap(Bitmap bm)

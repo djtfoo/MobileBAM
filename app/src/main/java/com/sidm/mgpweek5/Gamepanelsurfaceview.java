@@ -17,6 +17,7 @@ import android.hardware.SensorManager;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
@@ -82,7 +83,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     GUIbutton AttackButton;
     GUIbutton PauseButton;
     GUIbutton SwitchButton;
-
+    JoyStick RangedJoyStick;
     GUIbutton primaryButton;
 
     // Pause
@@ -268,6 +269,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         JumpButton = new GUIbutton("Jump");
         PauseButton = new GUIbutton("Pause");
         SwitchButton = new GUIbutton("Switch");
+        RangedJoyStick = new JoyStick("Ranged");
         primaryButton = null;
 
         int buttonSize = (int) (0.7f * map.tileSize_Y * ((float) Screenwidth / (float) Screenheight));
@@ -278,6 +280,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         SwitchButton.SetButtonSize(buttonSize);
         AttackButton.SetButtonSize((int) (buttonSize * 1.45));
         PauseButton.SetButtonSize((int)(0.9f * map.tileSize_X));
+        RangedJoyStick.SetButtonSize(buttonSize * 3);
 
         LeftButton.SetButtonPos((int) (map.tileSize_X), (int) (7.8f * map.tileSize_Y));
         RightButton.SetButtonPos((int) (map.tileSize_X) + (int) (Screenwidth * 0.02) + buttonSize, (int) (7.8f * map.tileSize_Y));
@@ -285,6 +288,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         AttackButton.SetButtonPos((int) ((map.GetCols() - 2) * map.tileSize_X), (int) (7.3f * map.tileSize_Y));
         PauseButton.SetButtonPos((int) ((map.GetCols() / 2 - 0.45f) * map.tileSize_X), (int) (0.2f * map.tileSize_Y));
         SwitchButton.SetButtonPos((int) (0.3f * map.tileSize_X), (int) (5.f * map.tileSize_Y));
+        RangedJoyStick.SetButtonPos((int) ((map.GetCols() - 4.f) * map.tileSize_X), (int) (5.5f *map.tileSize_Y));
+
 
         LeftButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
         RightButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
@@ -292,6 +297,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         AttackButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true));
         PauseButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause), PauseButton.GetButtonSize(), PauseButton.GetButtonSize(), true));
         SwitchButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.switchbutton), SwitchButton.GetButtonSize(), SwitchButton.GetButtonSize(), true));
+        RangedJoyStick.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.joy_bg), RangedJoyStick.GetButtonSize(), RangedJoyStick.GetButtonSize(), true));
 
         LeftButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton_pressed), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
         RightButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton_pressed), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
@@ -299,6 +305,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         AttackButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.attackbutton_pressed), AttackButton.GetButtonSize(), AttackButton.GetButtonSize(), true));
         PauseButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.pause1), PauseButton.GetButtonSize(), PauseButton.GetButtonSize(), true));
         SwitchButton.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.switchbutton_pressed), SwitchButton.GetButtonSize(), SwitchButton.GetButtonSize(), true));
+        RangedJoyStick.SetBitMapPressed(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.joy_bg_pressed), RangedJoyStick.GetButtonSize(), RangedJoyStick.GetButtonSize(), true));
+
+        RangedJoyStick.bmFG = (Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.joy_fg), RangedJoyStick.GetButtonSize(), RangedJoyStick.GetButtonSize(), true));
 
         Buttons = new GUIbutton[6];
         Buttons[0] = LeftButton;
@@ -307,38 +316,38 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         Buttons[3] = AttackButton;
         Buttons[4] = PauseButton;
         Buttons[5] = SwitchButton;
+
+        RangedJoyStick.active = false;
     }
 
     public void RenderButtons(Canvas canvas) {
-        if (!isPaused && LeftButton.isPressed())
-            canvas.drawBitmap(LeftButton.GetBitMapPressed(), (int) (LeftButton.GetPosition().x), (int) (LeftButton.GetPosition().y), null);
-        else
-            canvas.drawBitmap(LeftButton.GetBitMap(), (int) (LeftButton.GetPosition().x), (int) (LeftButton.GetPosition().y), null);
 
-        if (!isPaused && RightButton.isPressed())
-            canvas.drawBitmap(RightButton.GetBitMapPressed(), (int) (RightButton.GetPosition().x), (int) (RightButton.GetPosition().y), null);
-        else
-            canvas.drawBitmap(RightButton.GetBitMap(), (int) (RightButton.GetPosition().x), (int) (RightButton.GetPosition().y), null);
+        for(int i = 0; i < ButtonCount; i++)
+        {
+            if(!Buttons[i].active)
+                continue;
 
-        if (!isPaused && AttackButton.isPressed())
-            canvas.drawBitmap(AttackButton.GetBitMapPressed(), (int) (AttackButton.GetPosition().x), (int) (AttackButton.GetPosition().y), null);
-        else
-            canvas.drawBitmap(AttackButton.GetBitMap(), (int) (AttackButton.GetPosition().x), (int) (AttackButton.GetPosition().y), null);
-
-        if (!isPaused && JumpButton.isPressed())
-            canvas.drawBitmap(JumpButton.GetBitMapPressed(), (int) (JumpButton.GetPosition().x), (int) (JumpButton.GetPosition().y), null);
-        else
-            canvas.drawBitmap(JumpButton.GetBitMap(), (int) (JumpButton.GetPosition().x), (int) (JumpButton.GetPosition().y), null);
-
-        if (!isPaused && SwitchButton.isPressed())
-            canvas.drawBitmap(SwitchButton.GetBitMapPressed(), (int) (SwitchButton.GetPosition().x), (int) (SwitchButton.GetPosition().y), null);
-        else
-            canvas.drawBitmap(SwitchButton.GetBitMap(), (int) (SwitchButton.GetPosition().x), (int) (SwitchButton.GetPosition().y), null);
+            if (!isPaused && Buttons[i].isPressed())
+                canvas.drawBitmap(Buttons[i].GetBitMapPressed(), (int) (Buttons[i].GetPosition().x), (int) (Buttons[i].GetPosition().y), null);
+            else
+                canvas.drawBitmap(Buttons[i].GetBitMap(), (int) (Buttons[i].GetPosition().x), (int) (Buttons[i].GetPosition().y), null);
+        }
 
         if (isPaused)
             canvas.drawBitmap(PauseButton.GetBitMapPressed(), (int) (PauseButton.GetPosition().x), (int) (PauseButton.GetPosition().y), null);
         else
             canvas.drawBitmap(PauseButton.GetBitMap(), (int) (PauseButton.GetPosition().x), (int) (PauseButton.GetPosition().y), null);
+
+        if(RangedJoyStick.active)
+        {
+            if(RangedJoyStick.isPressed())
+            {
+                canvas.drawBitmap(RangedJoyStick.GetBitMapPressed(), (int) (RangedJoyStick.GetPosition().x), (int) (RangedJoyStick.GetPosition().y), null);
+                canvas.drawBitmap(RangedJoyStick.bmFG, (int) (RangedJoyStick.GetTouchPos().x), (int) (RangedJoyStick.GetTouchPos().y), null);
+            }
+            else
+                canvas.drawBitmap(RangedJoyStick.GetBitMap(), (int) (RangedJoyStick.GetPosition().x), (int) (RangedJoyStick.GetPosition().y), null);
+        }
     }
 
     //must implement inherited abstract methods
@@ -549,6 +558,23 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     player.Jump(map);
                 }
 
+                if(SwitchButton.isPressed() && !SwitchButton.hold)
+                {
+                    SwitchButton.hold = true;
+                    AttackButton.active = !AttackButton.active;
+                    JumpButton.active = !JumpButton.active;
+                    RangedJoyStick.active = !RangedJoyStick.active;
+                }else if(!SwitchButton.isPressed() && SwitchButton.hold)
+                {
+                    SwitchButton.hold = false;
+                }
+
+                if(RangedJoyStick.isPressed())
+                {
+                    //RangedJoyStick.GetValue();
+                    Log.v("Test", RangedJoyStick.GetValue().ToString());
+                }
+
                 // update player movement
                 player.CheckIsInAir(map);
                 if (player.IsInAir()) {
@@ -627,8 +653,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         int PointerID = event.getActionIndex();
         if(PointerID < 0)
             return;
-        for (int i = 0; i < 6; i++) {
-            if(Buttons[i].isPressed())
+        for (int i = 0; i < ButtonCount; i++) {
+            if(!Buttons[i].active || Buttons[i].isPressed())
                 continue;
             if (CheckButtonPressed(new Vector2(event.getX(PointerID), event.getY(PointerID)), Buttons[i]))
             {
@@ -664,7 +690,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             return;
         //Log.v("STATE", Integer.toString(PointerID));
 
-        for (int i = 0; i < 6; i++) {
+        if(RangedJoyStick.PointerIndex == PointerID)
+        {
+            RangedJoyStick.PointerIndex = -1;
+            RangedJoyStick.SetPressed(false);
+            return;
+        }
+
+        for (int i = 0; i < ButtonCount; i++) {
             //Log.v("Buttons", Integer.toString(Buttons[i].PointerIndex));
             if (Buttons[i].PointerIndex == PointerID)
             {
@@ -707,8 +740,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 event.getY(pointerID)
         );
 
-        for(int i = 0; i < 6; i++)
+        for(int i = 0; i < ButtonCount; i++)
         {
+            if(!Buttons[i].active)
+                continue;
             if(CheckButtonPressed(CurrentTouchPos, Buttons[i]))
             {
                 if (!Buttons[i].isPressed())
@@ -732,7 +767,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     Buttons[i].SetPressed(false);
                 }
             }
+        }
 
+        if(RangedJoyStick.active && !RangedJoyStick.isPressed())
+        {
+           if(CheckButtonPressed(CurrentTouchPos, RangedJoyStick))
+           {
+               RangedJoyStick.SetPressed(true);
+               RangedJoyStick.PointerIndex = pointerID;
+           }
+        }else if(RangedJoyStick.PointerIndex == pointerID)
+        {
+            RangedJoyStick.SetTouchPos(CurrentTouchPos);
         }
     }
 
