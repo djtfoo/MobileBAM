@@ -454,7 +454,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
 
         canvas.drawBitmap(scaledbg, bgX, bgY, null);    // 1st background image
-        canvas.drawBitmap(scaledbg, bgX + Screenwidth, bgY, null);    // 2nd background image
+        //canvas.drawBitmap(scaledbg, bgX + Screenwidth, bgY, null);    // 2nd background image
 
         // draw the boss enemy
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setX((int) bossdragon.GetPosition().x);
@@ -577,10 +577,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
        switch (GameState) {
             case 0: {
                 // 3) Update the background to allow panning effect
-                bgX -= 200 * deltaTime;      // temp value to speed the panning
-                if (bgX < -Screenwidth) {
-                    bgX = 0;
-                }
+                //bgX -= 200 * deltaTime;      // temp value to speed the panning
+                //if (bgX < -Screenwidth) {
+                //    bgX = 0;
+                //}
 
                 // update sprite - make sprite animate
                 //player.spriteArray[player.GetState().GetValue()].update(dt_l);

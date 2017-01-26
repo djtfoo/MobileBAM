@@ -367,7 +367,7 @@ public class Player {
         {
             gameview.toast.show();
             gameview.soundmanager.PlaySFXSlash1();
-            gameview.bossdragon.TakeDamage(1000);
+            gameview.bossdragon.TakeDamage(50);
             bStartedAttack = false;
         }
 
