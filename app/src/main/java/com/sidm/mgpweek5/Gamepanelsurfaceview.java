@@ -29,6 +29,7 @@ import android.widget.Toast;
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 
+import java.util.HashMap;
 import java.util.Vector;
 
 /**
@@ -47,6 +48,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     int Screenwidth, Screenheight;
 
     private Bitmap playerProfile, bossProfile;
+
+    public HashMap<String, Bitmap> bitmapList = new HashMap<String, Bitmap>();     // for instantiating objects during runtime
 
     // 1c) Variables for defining background start and end point
     private short bgX = 0, bgY = 0;
@@ -154,6 +157,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 (int) (map.tileSize_X), (int) (map.tileSize_X), true);
 
         textSize = (int) (0.3 * map.tileSize_X * ((float) Screenwidth / (float) Screenheight));
+
+        //bitmapList.put("Arrow", Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.projectile_arrow),
+        //        (int) (0.5f * map.tileSize_X), (int) (0.5f * map.tileSize_X), true));
+        bitmapList.put("Turret", Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.projectile_turret),
+                (int) (0.5f * map.tileSize_X), (int) (0.5f * map.tileSize_X), true));
+        bitmapList.put("Arrow", Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.projectile_turret),
+                (int) (0.5f * map.tileSize_X), (int) (0.5f * map.tileSize_X), true));
 
         InitButtons();
         //Point1 = new TouchPoint();
@@ -574,7 +584,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
                 // update sprite - make sprite animate
                 //player.spriteArray[player.GetState().GetValue()].update(dt_l);
-                player.spriteArray[player.GetState().GetValue()].update(dt);
+                if (player.GetAttackState() != Player.PLAYER_STATE.RANGED_ATTACK)
+                    player.spriteArray[player.GetState().GetValue()].update(dt);
                 bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(dt_l);
 
                 for (int i = 0; i < Gameobject.goList.size(); ++i)
@@ -583,7 +594,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
 
                 // Do attack things here
-                if (player.GetAttackState() != Player.PLAYER_STATE.IDLE) {
+                if (player.GetAttackState() == Player.PLAYER_STATE.RANGED_ATTACK) {
+                    player.DoRangedAttack(dt, this);
+                }
+                else if (player.GetAttackState() != Player.PLAYER_STATE.IDLE) {
                     player.DoMeleeAttack(this);
                 }
                 // get key press
@@ -625,15 +639,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 if(RangedJoyStick.isPressed() && !RangedJoyStick.hold)
                 {
                     RangedJoyStick.hold = true;
+                    if (player.GetAttackState() == Player.PLAYER_STATE.IDLE)
+                        player.SetStartRangedAttack();
                 }else if(!RangedJoyStick.isPressed() && RangedJoyStick.hold)
                 {
                     //On Release
                     RangedJoyStick.hold = false;
-                    Projectile temp = new Projectile();
-                    temp.Init(ball, Screenwidth, Screenheight);
-                    temp.SetPosition(new Vector2(player.GetPosition()));
-                    temp.SetVelocity(RangedJoyStick.GetValue().Multiply(10));
-                    Gameobject.goList.add(temp);
+                    player.SetShootArrow(true);
                 }
 
                 // update player movement

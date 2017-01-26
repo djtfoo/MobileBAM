@@ -37,8 +37,8 @@ public class Projectile extends Gameobject {
     }
 
     // Init
-    public void Init(Bitmap ball, int screenWidth, int screenHeight) {
-        spriteArray[0] = new Spriteanimation(ball, 0, 0, 4, 1);
+    public void Init(Bitmap sprite, int screenWidth, int screenHeight) {
+        spriteArray[0] = new Spriteanimation(sprite, 0, 0, 4, 1);
     }
 
     // Update

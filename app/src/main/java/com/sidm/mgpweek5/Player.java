@@ -3,6 +3,7 @@ package com.sidm.mgpweek5;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 
 /**
  * Created by Foo on 3/12/2016.
@@ -47,6 +48,8 @@ public class Player {
     private boolean bFinishedFrame0 = false;
     private boolean bFinishedAttackAnimation = false;
     private boolean bAttackButtonPressed = false;
+    private boolean bShootArrow = false;
+    private boolean bReleasedArrow = false;
 
     private Collider AABBCollider;
     private Collider unflippedAABBCollider;
@@ -191,7 +194,7 @@ public class Player {
         }
         else
         {
-            X = (int)((position.x - 0.3f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - 0.4f * map.tileSize_X) / map.tileSize_X);
         }
         int Y = (int)((position.y + map.tileSize_Y) / map.tileSize_Y);
 
@@ -364,7 +367,7 @@ public class Player {
         {
             gameview.toast.show();
             gameview.soundmanager.PlaySFXSlash1();
-            gameview.bossdragon.TakeDamage(50);
+            gameview.bossdragon.TakeDamage(1000);
             bStartedAttack = false;
         }
 
@@ -393,8 +396,83 @@ public class Player {
         }
     }
 
-    public void DoRangedAttack() {
+    public void SetStartRangedAttack()
+    {
+        this.bReleasedArrow = false;
+        this.bShootArrow = false;
+        this.bFinishedFrame0 = false;
+        this.bFinishedAttackAnimation = false;
+        this.bAttackButtonPressed = false;
 
+        attackState = PLAYER_STATE.RANGED_ATTACK;
+        SetState(PLAYER_STATE.RANGED_ATTACK);
+    }
+
+    public void DoRangedAttack(float dt, Gamepanelsurfaceview gameview)
+    {
+        if (gameview.RangedJoyStick.GetValue().x < 0.f)
+        {
+            SetFlipSprite(true);
+        }
+        else
+        {
+            SetFlipSprite(false);
+        }
+
+        if (spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].getCurrentFrame() > 1)
+        {
+            if (bReleasedArrow)
+                spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
+        }
+        else if (spriteArray[attackState.GetValue()].getCurrentFrame() > 0)
+        {
+            bFinishedFrame0 = true;
+            spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
+        }
+        else if (spriteArray[attackState.GetValue()].getCurrentFrame() == 0) {
+            spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
+            if (bFinishedFrame0)
+                bFinishedAttackAnimation = true;
+        }
+
+        if (bShootArrow && !bReleasedArrow)
+        {
+            Projectile temp = new Projectile();
+            temp.Init(gameview.bitmapList.get("Arrow"), gameview.Screenwidth, gameview.Screenheight);
+            temp.SetPosition(new Vector2(gameview.player.GetPosition()));
+            temp.SetVelocity(gameview.RangedJoyStick.GetValue().GetNormalized().Multiply(1000));
+
+            //Matrix matrix = new Matrix();
+            //matrix.postRotate(angle);
+            //Bitmap.createBitmap(dt, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+
+
+            Gameobject.goList.add(temp);
+
+            spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].setCurrentFrame(3);
+
+            bShootArrow = false;
+            bReleasedArrow = true;
+        }
+
+        if (bFinishedAttackAnimation)
+        {
+            if (gameview.RangedJoyStick.isPressed() || gameview.RangedJoyStick.hold) {
+                SetStartRangedAttack();
+                spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].setCurrentFrame(1);
+                bFinishedFrame0 = true;
+            }
+            else
+            {
+                attackState = PLAYER_STATE.IDLE;
+                SetState(PLAYER_STATE.IDLE);
+            }
+        }
+    }
+
+    public void SetShootArrow(boolean shootArrow) {
+        if (!bReleasedArrow)
+            bShootArrow = shootArrow;
     }
 
 }
