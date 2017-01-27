@@ -11,7 +11,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.hardware.SensorEvent;
 import android.hardware.SensorManager;
@@ -24,13 +23,11 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.os.Vibrator;
 import android.widget.EditText;
-import android.widget.Toast;
 
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 
 import java.util.HashMap;
-import java.util.Vector;
 
 /**
  * Created by Foo on 24/11/2016.
@@ -43,7 +40,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private Vibrator vibrator = (Vibrator) this.getContext().getSystemService(Context.VIBRATOR_SERVICE);
 
     // 1a) Variables used for background rendering
-    private Bitmap bg, scaledbg;    // bg = background; scaledbg = scaled version of bg
+    private Bitmap scaledbg;    //scaledbg = scaled version of bg
     // 1b) Define Screen width and Screen height as integer
     int Screenwidth, Screenheight;
 
@@ -60,10 +57,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     // Fonts
     Typeface font;
-
-    // init for start png
-    private Bitmap star;
-    int numstar = 3;
 
     // Activity
     Activity activityTracker;   // use to track and then launch to the desired activity
@@ -98,11 +91,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     // Week 9 Sound
     Soundmanager soundmanager;
-
-    // Week 13 Toast
-    CharSequence text;
-    int toastTime;
-    Toast toast;
 
     // Week 13 Alert Dialog
     public boolean showAlert = false;
@@ -145,8 +133,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         map.tileSize_Y = Screenheight / map.GetRows();
 
         // 1e)load the image when this class is being instantiated
-        bg = BitmapFactory.decodeResource(getResources(), R.drawable.boss1_scene);
-        scaledbg = Bitmap.createScaledBitmap(bg, Screenwidth, Screenheight, true);
+        scaledbg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.boss1_scene), Screenwidth, Screenheight, true);
 
         tile_ground = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tile_ground),
                 (int) (map.tileSize_X), (int) (map.tileSize_Y), true);
@@ -199,9 +186,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Week 9 Sound
         soundmanager = new Soundmanager(context);
 
-        // Week 13 Toast
-        Toastmessage(context);
-
         // Week 14 Accelerometer
         sensor = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
         sensor.registerListener(this, sensor.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0),
@@ -251,13 +235,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         });
     }
 
-    // Week 13 Toast
-    public void Toastmessage(Context context) {
-        text = "Attack!";
-        toastTime = Toast.LENGTH_SHORT;
-        toast = Toast.makeText(context, text, toastTime);
-    }
-
     // Week 9 Pause
     public void PauseButtonPressed() {
         if (isPaused)   // game is currently paused
@@ -291,7 +268,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         SwitchButton.SetButtonSize(buttonSize);
         AttackButton.SetButtonSize((int) (buttonSize * 1.45));
         PauseButton.SetButtonSize((int)(0.9f * map.tileSize_X));
-        RangedJoyStick.SetButtonSize(buttonSize * 3);
+        RangedJoyStick.SetButtonSize((int) (buttonSize * 1.45));
 
         LeftButton.SetButtonPos((int) (map.tileSize_X), (int) (7.8f * map.tileSize_Y));
         RightButton.SetButtonPos((int) (map.tileSize_X) + (int) (Screenwidth * 0.02) + buttonSize, (int) (7.8f * map.tileSize_Y));
@@ -299,8 +276,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         AttackButton.SetButtonPos((int) ((map.GetCols() - 2) * map.tileSize_X), (int) (7.3f * map.tileSize_Y));
         PauseButton.SetButtonPos((int) ((map.GetCols() / 2 - 0.45f) * map.tileSize_X), (int) (0.2f * map.tileSize_Y));
         SwitchButton.SetButtonPos((int) (0.3f * map.tileSize_X), (int) (5.f * map.tileSize_Y));
-        RangedJoyStick.SetButtonPos((int) ((map.GetCols() - 4.f) * map.tileSize_X), (int) (5.5f *map.tileSize_Y));
-
+        //RangedJoyStick.SetButtonPos((int) ((map.GetCols() - 4.f) * map.tileSize_X), (int) (5.5f *map.tileSize_Y));
+        RangedJoyStick.SetButtonPos((int) ((map.GetCols() - 2) * map.tileSize_X), (int) (7.f * map.tileSize_Y));
 
         LeftButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.leftbutton), LeftButton.GetButtonSize(), LeftButton.GetButtonSize(), true));
         RightButton.SetBitMap(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.rightbutton), RightButton.GetButtonSize(), RightButton.GetButtonSize(), true));
@@ -629,7 +606,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     SwitchButton.hold = true;
                     AttackButton.active = !AttackButton.active;
-                    JumpButton.active = !JumpButton.active;
+                    //JumpButton.active = !JumpButton.active;
                     RangedJoyStick.active = !RangedJoyStick.active;
                 }else if(!SwitchButton.isPressed() && SwitchButton.hold)
                 {

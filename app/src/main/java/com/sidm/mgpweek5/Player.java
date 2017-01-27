@@ -365,7 +365,6 @@ public class Player {
     public void DoMeleeAttack(Gamepanelsurfaceview gameview) {
         if (bStartedAttack)
         {
-            gameview.toast.show();
             gameview.soundmanager.PlaySFXSlash1();
             gameview.bossdragon.TakeDamage(50);
             bStartedAttack = false;
@@ -423,6 +422,25 @@ public class Player {
         {
             if (bReleasedArrow)
                 spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
+            else if (bShootArrow)
+            {
+                Projectile temp = new Projectile();
+                temp.Init(gameview.bitmapList.get("Arrow"), gameview.Screenwidth, gameview.Screenheight);
+                temp.SetPosition(new Vector2(gameview.player.GetPosition()));
+                temp.SetVelocity(gameview.RangedJoyStick.GetValue().GetNormalized().Multiply(1000));
+
+                //Matrix matrix = new Matrix();
+                //matrix.postRotate(angle);
+                //Bitmap.createBitmap(dt, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+
+
+                Gameobject.goList.add(temp);
+
+                spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].setCurrentFrame(3);
+
+                bShootArrow = false;
+                bReleasedArrow = true;
+            }
         }
         else if (spriteArray[attackState.GetValue()].getCurrentFrame() > 0)
         {
@@ -433,26 +451,6 @@ public class Player {
             spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
             if (bFinishedFrame0)
                 bFinishedAttackAnimation = true;
-        }
-
-        if (bShootArrow && !bReleasedArrow)
-        {
-            Projectile temp = new Projectile();
-            temp.Init(gameview.bitmapList.get("Arrow"), gameview.Screenwidth, gameview.Screenheight);
-            temp.SetPosition(new Vector2(gameview.player.GetPosition()));
-            temp.SetVelocity(gameview.RangedJoyStick.GetValue().GetNormalized().Multiply(1000));
-
-            //Matrix matrix = new Matrix();
-            //matrix.postRotate(angle);
-            //Bitmap.createBitmap(dt, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
-
-
-            Gameobject.goList.add(temp);
-
-            spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].setCurrentFrame(3);
-
-            bShootArrow = false;
-            bReleasedArrow = true;
         }
 
         if (bFinishedAttackAnimation)

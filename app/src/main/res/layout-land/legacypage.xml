@@ -35,10 +35,41 @@
         android:layout_height="wrap_content"
         android:text=""
         android:textSize="50dp"
-        android:textColor="#94bde6"
-        android:id="@+id/PlayerName"
+        android:textColor="#bdfcf2"
+        android:id="@+id/playerName"
         android:layout_width="wrap_content"
         android:layout_centerVertical="true"
         android:layout_alignStart="@+id/legacy" />
+
+    <com.facebook.login.widget.ProfilePictureView
+        android:id="@+id/picture"
+        android:layout_gravity="center"
+        android:layout_width="100sp"
+        android:layout_height="100sp"
+        android:layout_marginEnd="32dp"
+        android:layout_centerVertical="true"
+        android:layout_toStartOf="@+id/playerName" />
+
+    <com.facebook.login.widget.LoginButton
+        android:id="@+id/fb_login_button"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/legacy"
+        android:layout_alignParentStart="true"
+        android:layout_marginStart="17dp" />
+
+    <Button
+        android:id="@+id/btn_sharescore"
+        android:layout_width="150dp"
+        android:layout_height="35dp"
+        android:layout_marginRight="101dp"
+        android:background="@drawable/button_transparent"
+        android:text="-SHARE-"
+        android:textSize="18dp"
+        android:fontFamily="sans-serif-black"
+        android:textColor="#02004F"
+        android:layout_alignBottom="@+id/picture"
+        android:layout_alignStart="@+id/btn_back" />
+    //android:layout_toStartOf="@+id/textView"
 
 </RelativeLayout>
