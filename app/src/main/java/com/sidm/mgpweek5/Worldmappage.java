@@ -15,7 +15,6 @@ public class Worldmappage extends Activity {
     //private Button btn_back3;
     //private Button btn_boss1;
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

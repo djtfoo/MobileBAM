@@ -32,8 +32,10 @@ import java.util.Iterator;
 public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.Callback {
     // Implement this interface to receive information about changes to the surface.
 
+    private boolean debugInfo = false;
+
     private Gamethread myThread = null; // Thread to control the rendering
-    private Vibrator vibrator = (Vibrator) this.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+    private Vibratormanager vibrator;
 
     // 1a) Variables used for background rendering
     private Bitmap scaledbg;    //scaledbg = scaled version of bg
@@ -108,6 +110,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Adding the callback (this) to the surface holder to intercept events
         getHolder().addCallback(this);
+
+        vibrator = new Vibratormanager(context);
 
         // 1d) Set information to get screen size
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
@@ -418,23 +422,25 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setY((int) bossdragon.GetPosition().y);
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].draw(canvas);
 
-        for(int i = 0; i < 1; i++)
+        if (debugInfo)
         {
+            for(int i = 0; i < 1; i++)
+            {
+                Paint paint = new Paint();
 
-            Paint paint = new Paint();
+                // go AABB
+                Vector2 min = bossdragon.HitBoxes[i].GetMinAABB();
+                Vector2 max = bossdragon.HitBoxes[i].GetMaxAABB();
+                Vector2 goPos = bossdragon.position;
 
-            // go AABB
-            Vector2 min = bossdragon.HitBoxes[i].GetMinAABB();
-            Vector2 max = bossdragon.HitBoxes[i].GetMaxAABB();
-            Vector2 goPos = bossdragon.position;
+                paint.setColor(Color.RED);
+                paint.setStrokeWidth(5);
+                paint.setStyle(Paint.Style.STROKE);
+                // sequence is minX, maxY, maxX, minY, where min point is the top left corner
+                canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
+                        goPos.x + max.x, goPos.y + min.y, paint);
 
-            paint.setColor(Color.RED);
-            paint.setStrokeWidth(5);
-            paint.setStyle(Paint.Style.STROKE);
-            // sequence is minX, maxY, maxX, minY, where min point is the top left corner
-            canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
-                    goPos.x + max.x, goPos.y + min.y, paint);
-
+            }
         }
 
         // draw the tilemap
@@ -459,14 +465,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         canvas.drawBitmap(bossProfile, (map.GetCols() - 1.5f) * map.tileSize_X, 0.5f * map.tileSize_Y, null);
         RenderBossHealthBar(canvas);
 
-        // Debug text
-        RenderTextOnScreen(canvas, "FPS " + FPS, (int) (1.5f * map.tileSize_X), (int) (0.4f * map.tileSize_Y), textSize);
-        //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
-        //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
-
         if(RangedJoyStick.isPressed())
         {
-            Vector2 Test = RangedJoyStick.GetValue().Multiply(1500);
+            Vector2 Test = RangedJoyStick.GetValue().Multiply(5000);
             Test = Test.Add(player.GetPosition());
             Log.v("Value", "Line Pos: " + RangedJoyStick.GetValue().ToString() + " Player Pos: " + player.GetPosition().ToString());
             Paint line = new Paint();
@@ -477,19 +478,26 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
 
         // DEBUG TEXT
-        if (!isPaused)
+        if (debugInfo)
         {
-            if (RightButton.isPressed()) {
-                RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, textSize);
-            }
-            if (LeftButton.isPressed()) {
-                RenderTextOnScreen(canvas, "Left Button Pressed", 130, 325, textSize);
-            }
-            if (AttackButton.isPressed()) {
-                RenderTextOnScreen(canvas, "Attack Button Pressed", 130, 375, textSize);
-            }
-            if (JumpButton.isPressed()) {
-                RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, textSize);
+            RenderTextOnScreen(canvas, "FPS " + FPS, (int) (1.5f * map.tileSize_X), (int) (0.4f * map.tileSize_Y), textSize);
+            //RenderTextOnScreen(canvas, "TP1 Initial: " + Point1.GetInitialPoint().ToString(), 130, 175, 50);
+            //RenderTextOnScreen(canvas, "TP1 Current: " + Point1.GetCurrentPoint().ToString(), 130, 225, 50);
+
+            if (!isPaused)
+            {
+                if (RightButton.isPressed()) {
+                    RenderTextOnScreen(canvas, "Right Button Pressed", 130, 275, textSize);
+                }
+                if (LeftButton.isPressed()) {
+                    RenderTextOnScreen(canvas, "Left Button Pressed", 130, 325, textSize);
+                }
+                if (AttackButton.isPressed()) {
+                    RenderTextOnScreen(canvas, "Attack Button Pressed", 130, 375, textSize);
+                }
+                if (JumpButton.isPressed()) {
+                    RenderTextOnScreen(canvas, "Jump Button Pressed", 130, 425, textSize);
+                }
             }
         }
 
@@ -776,6 +784,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         if(PointerID < 0)
             return;
 
+        if (event.getPointerCount() >= 5)
+            debugInfo = !debugInfo;
+
         Vector2 CurrentTouchPos = new Vector2(
                 event.getX(PointerID),
                 event.getY(PointerID)
@@ -800,10 +811,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 continue;
             if (CheckButtonPressed(new Vector2(event.getX(PointerID), event.getY(PointerID)), Buttons[i]))
             {
-                if(vibrator.hasVibrator())
-                {
-                    vibrator.vibrate(50);
-                }
+                vibrator.Vibrate(50);
+
                 if (!Buttons[i].isPressed())
                 {
                     Buttons[i].SetPressed(true);

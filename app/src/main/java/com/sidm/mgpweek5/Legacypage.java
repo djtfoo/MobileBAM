@@ -58,7 +58,7 @@ public class Legacypage extends Activity implements View.OnClickListener {
     private CallbackManager callbackManager;
     private LoginManager loginManager;
 
-    private Vibrator vibrator;
+    private Vibratormanager vibrator;
 
     // ShareDialog shareDialog;
     ProfilePictureView profile_pic;
@@ -70,7 +70,7 @@ public class Legacypage extends Activity implements View.OnClickListener {
 
         requestWindowFeature(Window.FEATURE_NO_TITLE); // Hides title
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN); // Hide top bar
-        vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
+        vibrator = new Vibratormanager(this);
 
         FacebookSdk.sdkInitialize(this.getApplicationContext());
         setContentView(R.layout.legacypage);
@@ -145,15 +145,13 @@ public class Legacypage extends Activity implements View.OnClickListener {
         Intent intent = new Intent();
 
         if (v == btn_back) {
-            if (vibrator.hasVibrator())
-                vibrator.vibrate(50);
+            vibrator.Vibrate(50);
             intent.setClass(this, Mainmenu.class);
             startActivity(intent);
         }
 
         if (v == btn_sharescore) {
-            if (vibrator.hasVibrator())
-                vibrator.vibrate(50);
+            vibrator.Vibrate(50);
             sharePost();
         }
     }

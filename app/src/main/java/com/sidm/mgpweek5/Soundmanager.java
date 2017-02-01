@@ -1,6 +1,7 @@
 package com.sidm.mgpweek5;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.AudioAttributes;
 import android.media.MediaPlayer;
 import android.media.SoundPool;
@@ -16,6 +17,12 @@ public class Soundmanager {
     private AudioAttributes audioAttributes;
     private int SFXslash1;
 
+    SharedPreferences SharedPref_musicVol;
+    int musicVol;
+
+    SharedPreferences SharedPref_sfxVol;
+    int sfxVol;
+
     // Constructor
     Soundmanager(Context context)
     {
@@ -29,11 +36,12 @@ public class Soundmanager {
                 .setMaxStreams(2).build();
 
         SFXslash1 = Sounds.load(context, R.raw.slash1_sfx, 1);
-    }
 
-    public void SetBGMVolume(float LeftBGMVol, float RightBGMVol)
-    {
-        BGM.setVolume(LeftBGMVol, RightBGMVol);
+        SharedPref_musicVol = context.getSharedPreferences("MusicVolume", Context.MODE_PRIVATE);
+        musicVol = SharedPref_musicVol.getInt("MusicVolume", 100);
+
+        SharedPref_sfxVol = context.getSharedPreferences("SFXVolume", Context.MODE_PRIVATE);
+        sfxVol = SharedPref_sfxVol.getInt("SFXVolume", 100);
     }
 
     public void PauseBGM()
@@ -43,6 +51,8 @@ public class Soundmanager {
 
     public void PlayBGM()
     {
+        float volume = musicVol / 100.f;
+        BGM.setVolume(volume, volume);
         BGM.start();
         BGM.setLooping(true);
     }
@@ -54,7 +64,8 @@ public class Soundmanager {
 
     public void PlaySFXSlash1()
     {
-        Sounds.play(SFXslash1, 1.f, 1.f, 0, 0, 1.5f);
+        float volume = sfxVol / 100.f;
+        Sounds.play(SFXslash1, volume, volume, 0, 0, 1.5f);
     }
 
     public void Exit()
