@@ -23,7 +23,7 @@ import android.view.View;
 public class Worldpanelview extends View implements SensorEventListener {
 
     Paint testPaint = new Paint();
-    Bitmap bg;
+    //Bitmap bg;
 
     // Week 14 Accelerometer test
     private SensorManager sensor;
@@ -43,17 +43,35 @@ public class Worldpanelview extends View implements SensorEventListener {
     GUIbutton BossDragonButton;
     GUIbutton BackButton;
 
+    // Visuals
+    Bitmap redPortal, bluePortal;
+    Bitmap arch;
+    Bitmap homeText;
+    Spriteanimation bossdragon;
+    Spriteanimation player;
+
+    float rotAngle = 0.f;
+
     // Activity
     Activity activityTracker;   // use to track and then launch to the desired activity
 
     public Worldpanelview(Context context, Activity activity) {
         super(context);
 
-        bg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.worldmap), 1920, 1080, true);
-
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         Screenwidth = metrics.widthPixels;
         Screenheight = metrics.heightPixels;
+
+
+        //bg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.worldmap), 1920, 1080, true);
+        redPortal = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.portal_red), Screenwidth / 2, Screenheight, true);
+        bluePortal = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.portal_blue), Screenwidth / 2, Screenheight, true);
+        arch = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.portal_arch), Screenwidth, Screenheight, true);
+
+        homeText = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.portal_home), (int)(Screenwidth * 0.2f), Screenheight / 5, true);
+        bossdragon = new Spriteanimation(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.dragon_idle), Screenwidth, Screenheight / 4, true), 0, 0, 4, 4);
+
+        player = new Spriteanimation(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.backview_run), Screenwidth / 2, Screenheight / 5, true), 0, 0, 4, 6);
 
         unitX = Screenwidth / 16;
         unitY = Screenheight / 9;
@@ -90,22 +108,57 @@ public class Worldpanelview extends View implements SensorEventListener {
         testPaint.setStrokeWidth(3);
         testPaint.setColor(0xFFFF0055);
 
-        canvas.drawBitmap(bg, 0, 0, null);
-        canvas.drawCircle(120, 120, 30, testPaint);
+        //canvas.drawBitmap(bg, 0, 0, null);
+
+        // render red portal
+        canvas.save();
+        rotAngle += 5;
+        canvas.translate(Screenwidth * 0.25f, Screenheight * 0.6f);
+        canvas.rotate(rotAngle);
+        canvas.translate(-Screenwidth * 0.25f, -Screenheight * 0.6f);
+        canvas.drawBitmap(redPortal, 0, Screenheight * 0.1f, null);
+        canvas.restore();
+
+        canvas.save();
+        canvas.translate(Screenwidth * 0.75f, Screenheight * 0.6f);
+        canvas.rotate(90 + rotAngle);
+        canvas.translate(-Screenwidth * 0.75f, -Screenheight * 0.6f);
+        canvas.drawBitmap(bluePortal, Screenwidth * 0.5f, Screenheight * 0.1f, null);
+        canvas.restore();
+
+        // ground
+        canvas.drawRect(0, Screenheight, Screenwidth, Screenheight * 0.8f, testPaint);
+        //canvas.drawCircle(120, 120, 30, testPaint);
+
+        // home text
+        canvas.drawBitmap(homeText, Screenwidth * 0.65f, Screenheight * 0.5f, null);
+
+        // boss dragon
+        bossdragon.setX((int)(Screenwidth * 0.27f));
+        bossdragon.setY((int)(Screenheight * 0.6f));
+        bossdragon.draw(canvas);
+
+        // arch
+        canvas.drawBitmap(arch, 0, 0, null);
+
+        // player
+        player.setX((int)(Screenwidth * 0.5f));
+        player.setY((int)(Screenheight * 0.8f));
+        player.draw(canvas);
 
         // Week 14 Accelerometer test ball
         canvas.drawBitmap(ball, ballCoord.x, ballCoord.y, null);
 
         // Buttons
-        if (BackButton.isPressed())
-            canvas.drawBitmap(BackButton.GetBitMapPressed(), (int) (BackButton.GetPosition().x), (int) (BackButton.GetPosition().y), null);
-        else
-            canvas.drawBitmap(BackButton.GetBitMap(), (int) (BackButton.GetPosition().x), (int) (BackButton.GetPosition().y), null);
-
-        if (BossDragonButton.isPressed())
-            canvas.drawBitmap(BossDragonButton.GetBitMapPressed(), (int) (BossDragonButton.GetPosition().x), (int) (BossDragonButton.GetPosition().y), null);
-        else
-            canvas.drawBitmap(BossDragonButton.GetBitMap(), (int) (BossDragonButton.GetPosition().x), (int) (BossDragonButton.GetPosition().y), null);
+        //if (BackButton.isPressed())
+        //    canvas.drawBitmap(BackButton.GetBitMapPressed(), (int) (BackButton.GetPosition().x), (int) (BackButton.GetPosition().y), null);
+        //else
+        //    canvas.drawBitmap(BackButton.GetBitMap(), (int) (BackButton.GetPosition().x), (int) (BackButton.GetPosition().y), null);
+//
+        //if (BossDragonButton.isPressed())
+        //    canvas.drawBitmap(BossDragonButton.GetBitMapPressed(), (int) (BossDragonButton.GetPosition().x), (int) (BossDragonButton.GetPosition().y), null);
+        //else
+        //    canvas.drawBitmap(BossDragonButton.GetBitMap(), (int) (BossDragonButton.GetPosition().x), (int) (BossDragonButton.GetPosition().y), null);
 
         invalidate();
     }
@@ -202,34 +255,34 @@ public class Worldpanelview extends View implements SensorEventListener {
         testX = ballCoord.x + (values[1] * ((System.currentTimeMillis() - lastTime) / 1000));
         testY = ballCoord.y + (values[0] * ((System.currentTimeMillis() - lastTime) / 1000));
 
-        // ball is going out of screen in x-axis
-        if (testX <= ball.getWidth() / 2 ||
-                testX >= Screenwidth - ball.getWidth() / 2)
-        {
-            // ball is within the screen in y-axis
-            if (testY > ball.getHeight() / 2 &&
-                    testY < Screenheight - ball.getHeight() / 2) {
-                ballCoord.y = testY;
-            }
-        }
+        //// ball is going out of screen in x-axis
+        //if (testX <= ball.getWidth() / 2 ||
+        //        testX >= Screenwidth - ball.getWidth() / 2)
+        //{
+        //    // ball is within the screen in y-axis
+        //    if (testY > ball.getHeight() / 2 &&
+        //            testY < Screenheight - ball.getHeight() / 2) {
+        //        ballCoord.y = testY;
+        //    }
+        //}
+//
+        //// ball is out of the screen in the y-axis
+        //else if (testY <= ball.getHeight() / 2 ||
+        //        testY >= Screenheight - ball.getHeight() / 2)
+        //{
+        //    // ball is within the screen in the x-axis
+        //    if (testX > ball.getWidth() / 2 &&
+        //            testX < Screenwidth - ball.getWidth() / 2)
+        //    {
+        //        ballCoord.x = testX;
+        //    }
+        //}
 
-        // ball is out of the screen in the y-axis
-        else if (testY <= ball.getHeight() / 2 ||
-                testY >= Screenheight - ball.getHeight() / 2)
-        {
-            // ball is within the screen in the x-axis
-            if (testX > ball.getWidth() / 2 &&
-                    testX < Screenwidth - ball.getWidth() / 2)
-            {
-                ballCoord.x = testX;
-            }
-        }
-
-        else
-        {   // move the ship in both axis independent of the frame
+        //else
+        //{   // move the ship in both axis independent of the frame
             ballCoord.x = testX;
             ballCoord.y = testY;
-        }
+        //}
     }
 
     @Override
@@ -240,7 +293,7 @@ public class Worldpanelview extends View implements SensorEventListener {
 
     @Override
     public void onAccuracyChanged(Sensor sensor, int i) {
-
+        // do something here if sensor accuracy changes
     }
 
 }
