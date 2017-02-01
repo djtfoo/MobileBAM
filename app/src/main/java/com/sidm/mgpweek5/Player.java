@@ -3,7 +3,6 @@ package com.sidm.mgpweek5;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Matrix;
 
 /**
  * Created by Foo on 3/12/2016.

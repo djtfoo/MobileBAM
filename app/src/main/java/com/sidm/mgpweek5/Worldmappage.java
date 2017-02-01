@@ -3,22 +3,18 @@ package com.sidm.mgpweek5;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Vibrator;
-import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.Button;
 
 /**
  * Created by Foo on 1/12/2016.
  */
 
-public class Worldmappage extends Activity implements View.OnClickListener {
+public class Worldmappage extends Activity {
 
-    private Button btn_back3;
-    private Button btn_boss1;
+    //private Button btn_back3;
+    //private Button btn_boss1;
 
-    private Vibrator vibrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,35 +22,35 @@ public class Worldmappage extends Activity implements View.OnClickListener {
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);  // hide the title
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
 
-        setContentView(R.layout.worldmappage);
+        //setContentView(R.layout.worldmappage);
+        setContentView(new Worldpanelview(this, this));
 
-        btn_back3 = (Button)findViewById(R.id.btn_back3);
-        btn_back3.setOnClickListener(this);
+        //btn_back3 = (Button)findViewById(R.id.btn_back3);
+        //btn_back3.setOnClickListener(this);
 
-        btn_boss1 = (Button)findViewById(R.id.btn_boss1);
-        btn_boss1.setOnClickListener(this);
+        //btn_boss1 = (Button)findViewById(R.id.btn_boss1);
+        //btn_boss1.setOnClickListener(this);
     }
 
-    public void onClick(View v) {
+    //public void onClick(View v) {
         Intent intent = new Intent();
-        if (v == btn_back3)
-        {
-            if (vibrator.hasVibrator())
-                vibrator.vibrate(50);
-            intent.setClass(this, Mainmenu.class);
-        }
-
-        if (v == btn_boss1)
-        {
-            if (vibrator.hasVibrator())
-                vibrator.vibrate(50);
-            intent.setClass(this, Gamepage.class);
-        }
-
-        startActivity(intent);
-    }
+        //if (v == btn_back3)
+        //{
+        //    if (vibrator.hasVibrator())
+        //        vibrator.vibrate(50);
+        //    intent.setClass(this, Mainmenu.class);
+        //}
+//
+        //if (v == btn_boss1)
+        //{
+        //    if (vibrator.hasVibrator())
+        //        vibrator.vibrate(50);
+        //    intent.setClass(this, Gamepage.class);
+        //}
+//
+        //startActivity(intent);
+    //}
 
     @Override
     protected void onPause() {
@@ -70,4 +66,5 @@ public class Worldmappage extends Activity implements View.OnClickListener {
     protected void onDestroy() {
         super.onDestroy();
     }
+
 }

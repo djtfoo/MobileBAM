@@ -12,8 +12,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.hardware.SensorEvent;
-import android.hardware.SensorManager;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -24,16 +22,13 @@ import android.view.SurfaceView;
 import android.os.Vibrator;
 import android.widget.EditText;
 
-import android.hardware.Sensor;
-import android.hardware.SensorEventListener;
-
 import java.util.HashMap;
 
 /**
  * Created by Foo on 24/11/2016.
  */
 
-public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
+public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.Callback {
     // Implement this interface to receive information about changes to the surface.
 
     private Gamethread myThread = null; // Thread to control the rendering
@@ -103,15 +98,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     SharedPreferences SharedPrefname;
     SharedPreferences.Editor editName;
     String Playername;
-
-    // Week 14 Accelerometer test
-    private SensorManager sensor;
-    float[] SensorVar = new float[3];
-    private float[] values = {0 ,0, 0};
-
-    private Bitmap ball;
-    private Vector2 ballCoord = new Vector2();
-    private long lastTime = System.currentTimeMillis();
 
     //constructor for this GamePanelSurfaceView class
     public Gamepanelsurfaceview(Context context, Activity activity) {
@@ -185,12 +171,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Week 9 Sound
         soundmanager = new Soundmanager(context);
-
-        // Week 14 Accelerometer
-        sensor = (SensorManager)getContext().getSystemService(Context.SENSOR_SERVICE);
-        sensor.registerListener(this, sensor.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0),
-                SensorManager.SENSOR_DELAY_NORMAL);
-        ball = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.testball), Screenwidth / 6, Screenheight / 6, true);
 
         // Week 13 Shared Preferences
         SharedPrefname = getContext().getSharedPreferences("PlayerUSERID", Context.MODE_PRIVATE);
@@ -366,8 +346,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             }
         }
 
-        // Release the memory
-        sensor.unregisterListener(this);
     }
 
     public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {
@@ -494,8 +472,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             }
         }
 
-        // Week 14 Accelerometer test ball
-        canvas.drawBitmap(ball, ballCoord.x, ballCoord.y, null);
     }
 
     // Draw functions
@@ -663,6 +639,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             case 1:
                 RenderGameplay(canvas);
                 RenderPause(canvas);
+                break;
         }
     }
 
@@ -877,52 +854,4 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return true;
     }
 
-    // Week 14 Accelerometer - method to implement and use
-    public void SensorMove()
-    {
-        float testX, testY;
-
-        testX = ballCoord.x + (values[1] * ((System.currentTimeMillis() - lastTime) / 1000));
-        testY = ballCoord.y + (values[0] * ((System.currentTimeMillis() - lastTime) / 1000));
-
-        // ball is going out of screen in x-axis
-        if (testX <= ball.getWidth() / 2 ||
-                testX >= Screenwidth - ball.getWidth() / 2)
-        {
-            // ball is within the screen in y-axis
-            if (testY > ball.getHeight() / 2 &&
-                    testY < Screenheight - ball.getHeight() / 2) {
-                ballCoord.y = testY;
-            }
-        }
-
-        // ball is out of the screen in the y-axis
-        else if (testY <= ball.getHeight() / 2 ||
-                testY >= Screenheight - ball.getHeight() / 2)
-        {
-            // ball is within the screen in the x-axis
-            if (testX > ball.getWidth() / 2 &&
-                    testX < Screenwidth - ball.getWidth() / 2)
-            {
-                ballCoord.x = testX;
-            }
-        }
-
-        else
-        {   // move the ship in both axis independent of the frame
-            ballCoord.x = testX;
-            ballCoord.y = testY;
-        }
-    }
-
-    @Override
-    public void onSensorChanged(SensorEvent event) {
-        values = event.values;
-        SensorMove();
-    }
-
-    @Override
-    public void onAccuracyChanged(Sensor sensor, int i) {
-
-    }
 }

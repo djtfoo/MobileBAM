@@ -1,8 +1,7 @@
 package com.sidm.mgpweek5;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.content.Context;
+
 /**
  * Created by Foo on 6/12/2016.
  */
