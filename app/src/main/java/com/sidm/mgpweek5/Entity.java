@@ -12,6 +12,7 @@ public class Entity extends Gameobject {
     // Constructor
     protected Entity(int hp) {
         super();
+        type = "entity";
         maxHP = hp;
         this.hp = maxHP;
     }

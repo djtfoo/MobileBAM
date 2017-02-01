@@ -10,6 +10,8 @@ public class Gameobject {
 
     protected Vector2 position = new Vector2();
     public Spriteanimation[] spriteArray;   // Sprite animation
+    public String type;
+    public boolean toBeDestroyed;
 
     protected Collider AABBCollider = new Collider();
 
@@ -19,6 +21,8 @@ public class Gameobject {
     // constructor
     protected Gameobject() {
         position.SetZero();
+        type = "object";
+        toBeDestroyed = false;
     }
 
     // Position

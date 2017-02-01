@@ -23,6 +23,7 @@ import android.os.Vibrator;
 import android.widget.EditText;
 
 import java.util.HashMap;
+import java.util.Iterator;
 
 /**
  * Created by Foo on 24/11/2016.
@@ -146,6 +147,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         player.SetPosition(2 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
         bossdragon.Init(context, Screenwidth, Screenheight);
         bossdragon.SetPosition(Screenwidth / 2, Screenheight / 7 * 4);
+        Gameobject.goList.add(bossdragon);
 
         //Gameobject.goList.add(bossdragon);
 
@@ -416,6 +418,25 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setY((int) bossdragon.GetPosition().y);
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].draw(canvas);
 
+        for(int i = 0; i < 1; i++)
+        {
+
+            Paint paint = new Paint();
+
+            // go AABB
+            Vector2 min = bossdragon.HitBoxes[i].GetMinAABB();
+            Vector2 max = bossdragon.HitBoxes[i].GetMaxAABB();
+            Vector2 goPos = bossdragon.position;
+
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(5);
+            paint.setStyle(Paint.Style.STROKE);
+            // sequence is minX, maxY, maxX, minY, where min point is the top left corner
+            canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
+                    goPos.x + max.x, goPos.y + min.y, paint);
+
+        }
+
         // draw the tilemap
         drawTilemap(canvas);
 
@@ -520,6 +541,83 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 goPos.x + max.x, goPos.y + min.y, paint);
     }
 
+
+    private boolean Collided(Gameobject go1, Gameobject go2)
+    {
+        if(go1.GetCollider().GetMinAABB().x + go1.position.x < go2.GetCollider().GetMaxAABB().x + go2.position.x &&
+                go1.GetCollider().GetMaxAABB().x + go1.position.x > go2.GetCollider().GetMinAABB().x + go2.position.x &&
+                go1.GetCollider().GetMinAABB().y + go1.position.y < go2.GetCollider().GetMaxAABB().y + go2.position.y &&
+                go1.GetCollider().GetMaxAABB().y + go1.position.y > go2.GetCollider().GetMinAABB().y + go2.position.y)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    private void CheckForCollision()
+    {
+        for(int i = 0; i < Gameobject.goList.size(); i++)
+        {
+            Gameobject go1 = Gameobject.goList.get(i);
+            for(int j = 0; j < Gameobject.goList.size(); j++)
+            {
+                Gameobject go2 = Gameobject.goList.get(j);
+                if(go1 == go2 || go2.toBeDestroyed || go1.toBeDestroyed)
+                    continue;
+
+                if(go1.type == "boss" || go2.type == "boss")
+                {
+                    Gameobject goA, goB;
+                    if(go1.type == "boss") {
+                        goA = go1;
+                        goB = go2;
+                    }
+                    else {
+                        goA = go2;
+                        goB = go1;
+                    }
+
+                    Bossdragon temp = (Bossdragon)goA;
+                    for(int k = 0; k < 1; k++)
+                    {
+                        temp.AABBCollider = temp.HitBoxes[k];
+                        if (Collided(temp, goB))
+                        {
+                            temp.SetHP(temp.GetHP() - 20);
+                            goB.toBeDestroyed = true;
+                            break;
+                        }
+                    }
+                }else if(Collided(go1, go2))
+                {
+                    go1.toBeDestroyed = true;
+                    go2.toBeDestroyed = true;
+                }
+            }
+        }
+    }
+
+    private void EntityUpdate(float dt)
+    {
+        for (int i = 0; i < Gameobject.goList.size(); ++i)
+        {
+            Gameobject.goList.get(i).Update(dt);
+        }
+
+        CheckForCollision();
+
+        Iterator<Gameobject> goItr = Gameobject.goList.iterator();
+
+        while(goItr.hasNext())
+        {
+            Gameobject temp = goItr.next();
+            if(temp.toBeDestroyed)
+                goItr.remove();
+        }
+    }
+
+
     //Update method to update the game play
     public void update(float dt, float fps) {
         this.deltaTime = dt;
@@ -541,10 +639,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     player.spriteArray[player.GetState().GetValue()].update(dt);
                 bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(dt_l);
 
-                for (int i = 0; i < Gameobject.goList.size(); ++i)
-                {
-                    Gameobject.goList.get(i).Update(dt);
-                }
+                EntityUpdate(dt);
 
                 // Do attack things here
                 if (player.GetAttackState() == Player.PLAYER_STATE.RANGED_ATTACK) {

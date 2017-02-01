@@ -9,7 +9,7 @@ public class Tower extends Entity {
     // Constructor
     protected Tower(int hp) {
         super(hp);
-
+        type = "tower";
         spriteArray = new Spriteanimation[1];
     }
 

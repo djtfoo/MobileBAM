@@ -18,7 +18,7 @@ public class Projectile extends Gameobject {
         super();
         velocity.SetZero();
         lifespan = 0.0;
-
+        type = "projectile";
         spriteArray = new Spriteanimation[1];
     }
 
