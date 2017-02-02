@@ -53,7 +53,6 @@
         android:layout_below="@+id/optionstitle"
         android:layout_toStartOf="@+id/musicBar" />
 
-
     <SeekBar
         android:id="@+id/sfxBar"
         android:layout_width="200dp"
@@ -74,6 +73,26 @@
         android:textColor="#02004F"
         android:layout_marginTop="65dp"
         android:layout_below="@+id/optionstitle"
-        android:layout_toStartOf="@+id/musicBar" />
+        android:layout_toStartOf="@+id/sfxBar" />
+
+    <TextView
+        android:id="@+id/textVibration"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Vibration"
+        android:textSize="30dp"
+        android:fontFamily="sans-serif-black"
+        android:textColor="#02004F"
+        android:layout_marginTop="110dp"
+        android:layout_above="@+id/btn_back2"
+        android:layout_toStartOf="@+id/btn_back2" />
+
+    <Switch
+        android:id="@+id/vibrationSwitch"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="29dp"
+        android:layout_alignTop="@+id/textVibration"
+        android:layout_alignStart="@+id/btn_back2"/>
 
 </RelativeLayout>
