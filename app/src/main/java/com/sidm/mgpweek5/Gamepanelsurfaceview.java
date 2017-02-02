@@ -12,7 +12,6 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -20,8 +19,6 @@ import android.util.Log;
 import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import android.os.Vibrator;
-import android.view.ViewGroup;
 import android.widget.EditText;
 
 import java.util.HashMap;
@@ -321,10 +318,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     public void surfaceDestroyed(SurfaceHolder holder) {
         // Destroy the thread
-        if (myThread.isAlive()) {
-            myThread.startRun(false);
-            soundmanager.StopBGM();
-            soundmanager.Exit();
+            if (myThread.isAlive()) {
+                myThread.startRun(false);
+                soundmanager.StopBGM();
+                soundmanager.Exit();
+                activityTracker.finish();
+
+                Gamepanelsurfaceview.instance = null;
+                Gameobject.goList.clear();
+                Gameobject.missileList.clear();
+                Gameobject.particleList.clear();
         }
         boolean retry = true;
         while (retry) {
@@ -448,7 +451,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 DrawGameobject(canvas, go);
         }
 
-        if (debugInfo || (!debugInfo && bossdragon.shielded))
+        if (debugInfo || (!debugInfo && !bossdragon.shielded))
         {
             for(int i = 0; i < 1; i++)
             {
@@ -655,7 +658,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         goB = go1;
                     }
                     Bossdragon temp = (Bossdragon)goA;
-                    for(int k = 0; k < 1; k++)
+                    for(int k = 0; k < temp.GetNumHitboxes(); k++)
                     {
                         if (Collided(bossdragon.HitBoxes[k], goB))
                         {
@@ -809,7 +812,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         if(BossMissileAttackTimer > 10f)
         {
             if(Gameobject.missileList.size() < 2)
-            bossdragon.SpawnMissiles();
+                bossdragon.SpawnMissiles();
             BossMissileAttackTimer = 0f;
             soundmanager.PlaySFXMissileLaunch();
         }

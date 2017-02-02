@@ -51,4 +51,17 @@ public class Collider {
         return false;
     }
 
+    public static boolean CheckAABBtoAABB(Gameobject go1, Gameobject go2)
+    {
+        if(go1.GetCollider().GetMinAABB().x + go1.position.x < go2.GetCollider().GetMaxAABB().x + go2.position.x &&
+                go1.GetCollider().GetMaxAABB().x + go1.position.x > go2.GetCollider().GetMinAABB().x + go2.position.x &&
+                go1.GetCollider().GetMinAABB().y + go1.position.y < go2.GetCollider().GetMaxAABB().y + go2.position.y &&
+                go1.GetCollider().GetMaxAABB().y + go1.position.y > go2.GetCollider().GetMinAABB().y + go2.position.y)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }

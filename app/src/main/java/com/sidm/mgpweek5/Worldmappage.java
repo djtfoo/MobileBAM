@@ -1,7 +1,6 @@
 package com.sidm.mgpweek5;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.WindowManager;
@@ -33,7 +32,7 @@ public class Worldmappage extends Activity {
     }
 
     //public void onClick(View v) {
-        Intent intent = new Intent();
+        //Intent intent = new Intent();
         //if (v == btn_back3)
         //{
         //    if (vibrator.hasVibrator())

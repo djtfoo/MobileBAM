@@ -1,7 +1,5 @@
 package com.sidm.mgpweek5;
 
-import android.util.Log;
-
 /**
  * Created by Arun on 2/2/2017.
  */

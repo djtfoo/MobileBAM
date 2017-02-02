@@ -390,13 +390,25 @@ public class Player {
             gameview.soundmanager.PlaySFXSlash1();
             //gameview.bossdragon.TakeDamage(50);
 
-            int spriteWidth = spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth();
-            Vector2 point = new Vector2();
+            //int spriteWidth = spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth();
+            //Vector2 point = new Vector2();
 
-            if (flipSprites)    // facing left
-                point.Set(position.x - spriteWidth * 0.1f, position.y);
+            Gameobject swordCollider = new Gameobject();
+            swordCollider.position = this.position; // player pos
+
+            int spriteWidth = spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth();
+            int spriteHeight = spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteHeight();
+
+            if (flipSprites)
+            {
+                swordCollider.AABBCollider.SetMinAABB(new Vector2(-spriteWidth * 0.25f, -spriteHeight * 0.05f));
+                swordCollider.AABBCollider.SetMaxAABB(new Vector2(spriteWidth * 0.25f, spriteHeight * 0.5f));
+            }
             else
-                point.Set(position.x + spriteWidth * 0.2f, position.y);
+            {
+                swordCollider.AABBCollider.SetMinAABB(new Vector2(-spriteWidth * 0.25f, -spriteHeight * 0.05f));
+                swordCollider.AABBCollider.SetMaxAABB(new Vector2(spriteWidth * 0.25f, spriteHeight * 0.5f));
+            }
 
             for(int i = 0; i < Gameobject.goList.size(); i++)
             {
@@ -405,30 +417,43 @@ public class Player {
                 if (go.toBeDestroyed)
                     continue;
 
-                if (Collider.CheckPointToAABB(point, go))
+                if (go.type == "boss")
                 {
-                    if (go.type == "boss") {
-                        Bossdragon bd = (Bossdragon)go;
-                        bd.TakeDamage(50);
-                        if (bd.IsDead()) {
-                            bd.toBeDestroyed = true;
+                    Bossdragon bd = (Bossdragon)go;
+                    for(int k = 0; k < bd.GetNumHitboxes(); k++)
+                    {
+                        if (Collider.CheckAABBtoAABB(bd.HitBoxes[k], swordCollider))
+                        {
+                            if(!bd.shielded) {
+                                bd.TakeDamage(50);
+                                ToBeCreated.add(swordCollider.position);
+                                break;
+                            }
                         }
-                        ToBeCreated.add(go.position);
-                    }
-                    else if (go.type == "shieldgenerator") {
-                        TowerShieldgenerator tsg = (TowerShieldgenerator)go;
-                        tsg.TakeDamage(25);
-                        if (tsg.IsDead()) {
-                            tsg.toBeDestroyed = true;
-                        }
-                        ToBeCreated.add(go.position);
-                    }
-                    else if (go.type == "missile") {
-                        Missile missile = (Missile)go;
-                        missile.toBeDestroyed = true;
-                        ToBeCreated.add(go.position);
                     }
                 }
+                else
+                {
+                    if (Collider.CheckAABBtoAABB(swordCollider, go))
+                    {
+                        if (go.type == "shieldgenerator") {
+                            TowerShieldgenerator tsg = (TowerShieldgenerator)go;
+                            tsg.TakeDamage(25);
+                            if (tsg.IsDead()) {
+                                tsg.toBeDestroyed = true;
+                            }
+                            ToBeCreated.add(go.position);
+                        }
+                        else if (go.type == "missile") {
+                            Missile missile = (Missile)go;
+                            if (missile.shielded) {
+                                missile.toBeDestroyed = true;
+                                ToBeCreated.add(go.position);
+                            }
+                        }
+                    }
+                }
+
             }
 
             // Spawn stuff here lmao

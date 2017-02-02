@@ -113,6 +113,7 @@ public class Optionspage extends Activity implements View.OnClickListener, SeekB
             public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
                 vibration = isChecked;
                 vibrator.Vibrate(50);
+                vibrator.SetVibration(vibration);
             }
         });
 

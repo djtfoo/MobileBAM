@@ -33,4 +33,11 @@ public class Vibratormanager {
         if (HasVibrator() && vibration)
             vibrator.vibrate(ms);
     }
+
+    public void SetVibration(boolean vibration)
+    {
+        this.vibration = vibration;
+    }
+
+
 }

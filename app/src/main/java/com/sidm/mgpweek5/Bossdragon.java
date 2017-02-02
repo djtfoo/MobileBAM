@@ -28,6 +28,8 @@ public class Bossdragon extends Entity {
 
     private BOSSDRAGON_STATE state;
 
+    private final int numHitboxes = 1;
+
     // Constructor
     public Bossdragon() {
         super(500);
@@ -46,7 +48,7 @@ public class Bossdragon extends Entity {
         int spriteWidth = spriteArray[Bossdragon.BOSSDRAGON_STATE.IDLE.GetValue()].getSpriteWidth();
         int spriteHeight = spriteArray[Bossdragon.BOSSDRAGON_STATE.IDLE.GetValue()].getSpriteHeight();
 
-        HitBoxes = new Gameobject[1];
+        HitBoxes = new Gameobject[numHitboxes];
 
         HitBoxes[0] = new Gameobject();
         HitBoxes[0].AABBCollider.SetMaxAABB(new Vector2(spriteWidth * 0.083f , spriteHeight * 0.135f));
@@ -69,6 +71,11 @@ public class Bossdragon extends Entity {
 
     BOSSDRAGON_STATE GetState() {
         return state;
+    }
+
+    public int GetNumHitboxes()
+    {
+        return numHitboxes;
     }
 
     @Override
