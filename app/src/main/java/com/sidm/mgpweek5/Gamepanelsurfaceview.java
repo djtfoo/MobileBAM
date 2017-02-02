@@ -162,7 +162,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         // Init Player and GameObjects/Entities
         Player.instance.Init(context, map, Screenwidth, Screenheight);
-        Player.instance.SetPosition(2 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
+        Player.instance.SetPosition(2 * map.tileSize_X, (map.GetRows() - 3) * map.tileSize_Y);
         bossdragon.Init(context, Screenwidth, Screenheight);
         bossdragon.SetPosition(Screenwidth / 2, Screenheight / 7 * 4);
         Gameobject.goList.add(bossdragon);
@@ -170,12 +170,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //Gameobject.goList.add(bossdragon);
 
         testsg.Init(context, Screenwidth, Screenheight);
-        testsg.SetPosition(3 * map.tileSize_X, (map.GetRows() - 6) * map.tileSize_Y);
+        testsg.SetPosition(2 * map.tileSize_X, (map.GetRows() - 3) * map.tileSize_Y);
         Gameobject.goList.add(testsg);
 
         testsg = new TowerShieldgenerator(100);
         testsg.Init(context, Screenwidth, Screenheight);
-        testsg.SetPosition(14 * map.tileSize_X, (map.GetRows() - 5) * map.tileSize_Y);
+        testsg.SetPosition(14 * map.tileSize_X, (map.GetRows() - 7) * map.tileSize_Y);
         Gameobject.goList.add(testsg);
         // Create the game loop thread
         myThread = new Gamethread(getHolder(), this);
@@ -571,6 +571,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             for(int i = 0; i < Gameobject.missileList.size(); ++i)
             {
                 Missile temp = Gameobject.missileList.get(i);
+                if(temp.state == Missile.MISSILE_STATE.LAUNCH)
+                    continue;
                 if( temp.position.Subtract(go.position).GetLength() < map.tileSize_X * 4 )
                 {
                     temp.shielded = true;
@@ -657,7 +659,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                             if(goB.type == "projectile")
                             {
                                 if(!bossdragon.shielded)
-                                bossdragon.SetHP(temp.GetHP() - ((Projectile)goB).damage);
+                                bossdragon.TakeDamage(((Projectile)goB).damage);
                                 ToBeCreated.add(goB.position);
                                 goB.toBeDestroyed = true;
                             }
@@ -686,9 +688,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
                     if(!go1.shielded)
                     {
-                        ((Tower)go1).SetHP(((Tower)go1).GetHP() - ((Projectile)go2).damage);
-                        if(((Tower)go1).GetHP() <= 0)
+                        if(go1.type == "shieldgenerator")
+                        {
+                            ((Tower)go1).TakeDamage(((Projectile)go2).damage);
+                            if(((Tower)go1).GetHP() <= 0)
+                                go1.toBeDestroyed = true;
+                        }else
+                        {
                             go1.toBeDestroyed = true;
+                        }
                         ToBeCreated.add(go1.position);
 
                     }
@@ -707,7 +715,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     {
                         if( ((Missile)go1).state == Missile.MISSILE_STATE.LAUNCH)
                             continue;
-                        Player.instance.SetHP(Player.instance.GetHP() - ((Projectile)go1).damage);
+                        Player.instance.TakeDamage(((Projectile)go1).damage);
                         ToBeCreated.add(go1.position);
                         go1.toBeDestroyed = true;
                         ToBeCreated.add(go1.position);
