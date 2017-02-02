@@ -416,6 +416,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // draw the tilemap
         drawTilemap(canvas);
 
+
+        boolean generatorsOnline = false;
         // draw the Gameobjects
         for (int i = 0; i < Gameobject.goList.size(); ++i)
         {
@@ -423,7 +425,21 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             if(go.type == "boss" || go.type == "missile")
                 continue;
             DrawGameobject(canvas, go);
+
+            if(go.type == "shieldgenerator")
+            {
+                Paint line = new Paint();
+                line.setARGB(255, 150, 150, 255);
+                line.setStyle(Paint.Style.STROKE);
+                line.setStrokeWidth(10);
+
+                TowerShieldgenerator temp = (TowerShieldgenerator) go;
+                generatorsOnline = true;
+                canvas.drawLine(go.position.x, go.position.y, bossdragon.HitBoxes[0].position.x, bossdragon.HitBoxes[0].position.y, line);
+                canvas.drawCircle(bossdragon.HitBoxes[0].position.x, bossdragon.HitBoxes[0].position.y, bossdragon.HitBoxes[0].GetCollider().GetMaxAABB().y, line);
+            }
         }
+            bossdragon.shielded = generatorsOnline;
 
         for(int i =0; i < Gameobject.missileList.size(); ++i)
         {
@@ -580,16 +596,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     temp.shielded = false;
                 }
             }
-
-            if( bossdragon.HitBoxes[0].position.Subtract(go.position).GetLength() < map.tileSize_X * 4 )
-            {
-                bossdragon.shielded = true;
-                canvas.drawLine(go.position.x, go.position.y, bossdragon.HitBoxes[0].position.x, bossdragon.HitBoxes[0].position.y, line);
-                canvas.drawCircle(bossdragon.HitBoxes[0].position.x, bossdragon.HitBoxes[0].position.y, bossdragon.HitBoxes[0].GetCollider().GetMaxAABB().y, line);
-            }else
-            {
-                bossdragon.shielded = false;
-            }
         }
     }
 
@@ -719,6 +725,18 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     }
                 }
             }
+
+            if(go1.type == "projectile")
+            {
+                Projectile temp = (Projectile)go1;
+                if(temp.CollidedWithTileMap())
+                {
+                    temp.toBeDestroyed = true;
+                    ToBeCreated.add(temp.position);
+                }
+
+            }
+
         }
 
         // Spawn stuff here lmao
@@ -788,9 +806,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(gameTime);
         BossMissileAttackTimer += dt;
 
-        if(BossMissileAttackTimer > 5f)
+        if(BossMissileAttackTimer > 10f)
         {
-            if(Gameobject.missileList.size() < 5)
+            if(Gameobject.missileList.size() < 2)
             bossdragon.SpawnMissiles();
             BossMissileAttackTimer = 0f;
             soundmanager.PlaySFXMissileLaunch();

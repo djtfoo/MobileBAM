@@ -42,7 +42,7 @@ public class Missile extends Projectile
         flippedAABB.SetMinAABB(new Vector2(Gamepanelsurfaceview.instance.map.tileSize_X * -0.2f, Gamepanelsurfaceview.instance.map.tileSize_Y * -0.5f));
         flippedAABB.SetMaxAABB(new Vector2(Gamepanelsurfaceview.instance.map.tileSize_X * 0.2f, Gamepanelsurfaceview.instance.map.tileSize_Y * 0.8f));
 
-        damage = 30;
+        damage = 15;
 
         AABBCollider = unflippedAABB;
         Gameobject.missileList.add(this);

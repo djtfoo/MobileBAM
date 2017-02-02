@@ -41,6 +41,33 @@ public class Projectile extends Gameobject {
         spriteArray[0] = new Spriteanimation(sprite, 0, 0, 4, 1);
     }
 
+    public boolean CollidedWithTileMap()
+    {
+
+        Vector2 MaxPosition = new Vector2();
+        Vector2 MinPosition = new Vector2();
+        MaxPosition.x = position.x  + spriteArray[0].getSpriteWidth() * 0.5f;
+        MaxPosition.y = position.y -spriteArray[0].getSpriteHeight() * 0.5f;
+        int X = (int)((MaxPosition.x + Gamepanelsurfaceview.instance.map.tileSize_X) / Gamepanelsurfaceview.instance.map.tileSize_X);
+        int Y = (int)((MaxPosition.y + Gamepanelsurfaceview.instance.map.tileSize_Y) / Gamepanelsurfaceview.instance.map.tileSize_Y);
+        if(Gamepanelsurfaceview.instance.map.tilemap[Y][X] == 1)
+        {
+            return true;
+        }
+
+        MinPosition.x = position.x - spriteArray[0].getSpriteWidth() * 0.5f;
+        MinPosition.y = position.y + spriteArray[0].getSpriteHeight() * 0.5f;
+        X = (int)((MinPosition.x + Gamepanelsurfaceview.instance.map.tileSize_X) / Gamepanelsurfaceview.instance.map.tileSize_X);
+        Y = (int)((MinPosition.y + Gamepanelsurfaceview.instance.map.tileSize_Y) / Gamepanelsurfaceview.instance.map.tileSize_Y);
+        if(Gamepanelsurfaceview.instance.map.tilemap[Y][X] == 1)
+        {
+            return true;
+        }
+
+        return false;
+
+    }
+
     // Update
     @Override
     public void Update(float dt)
