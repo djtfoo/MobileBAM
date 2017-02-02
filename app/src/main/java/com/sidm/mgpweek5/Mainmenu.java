@@ -19,7 +19,7 @@ public class Mainmenu extends Activity implements View.OnClickListener {
     private Button btn_options;
     private Button btn_facebook;
 
-    private Vibrator vibrator;
+    private Vibratormanager vibrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,7 +27,7 @@ public class Mainmenu extends Activity implements View.OnClickListener {
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);  // hide the title
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
+        vibrator = new Vibratormanager(this);
 
         setContentView(R.layout.activity_mainmenu);
         //setContentView(R.layout.mainmenu);
@@ -52,22 +52,19 @@ public class Mainmenu extends Activity implements View.OnClickListener {
         Intent intent = new Intent();
         if (v == btn_start)
         {
-            if (vibrator.hasVibrator())
-                vibrator.vibrate(50);
+            vibrator.Vibrate(50);
             intent.setClass(this, Worldmappage.class);
         }
 
         else if (v == btn_help)
         {
-            if (vibrator.hasVibrator())
-                vibrator.vibrate(50);
+            vibrator.Vibrate(50);
             intent.setClass(this, Helppage.class);
         }
 
         else if (v == btn_options)
         {
-            if (vibrator.hasVibrator())
-                vibrator.vibrate(50);
+            vibrator.Vibrate(50);
             intent.setClass(this, Optionspage.class);
         }
 

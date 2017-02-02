@@ -17,7 +17,7 @@ public class Helppage extends Activity implements View.OnClickListener {
 
     private Button btn_back;
 
-    private Vibrator vibrator;
+    private Vibratormanager vibrator;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +25,7 @@ public class Helppage extends Activity implements View.OnClickListener {
 
         requestWindowFeature(Window.FEATURE_NO_TITLE);  // hide the title
         getWindow().setFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-        vibrator = (Vibrator)getSystemService(VIBRATOR_SERVICE);
+        vibrator = new Vibratormanager(this);
 
         setContentView(R.layout.helppage);
 
@@ -37,8 +37,7 @@ public class Helppage extends Activity implements View.OnClickListener {
         Intent intent = new Intent();
         if (v == btn_back)
         {
-            if (vibrator.hasVibrator())
-                vibrator.vibrate(50);
+            vibrator.Vibrate(50);
             intent.setClass(this, Mainmenu.class);
         }
 

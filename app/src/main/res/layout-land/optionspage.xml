@@ -31,4 +31,49 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true" />
 
+    <SeekBar
+        android:id="@+id/musicBar"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:layout_marginStart="29dp"
+        android:layout_alignTop="@+id/textmusic"
+        android:layout_alignStart="@+id/btn_back2">
+    </SeekBar>
+
+    <TextView
+        android:id="@+id/textmusic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="MUSIC"
+        android:textSize="30dp"
+        android:fontFamily="sans-serif-black"
+        android:textColor="#02004F"
+        android:layout_marginTop="20dp"
+        android:layout_below="@+id/optionstitle"
+        android:layout_toStartOf="@+id/musicBar" />
+
+
+    <SeekBar
+        android:id="@+id/sfxBar"
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:layout_marginStart="29dp"
+        android:layout_alignTop="@+id/textSFX"
+        android:layout_alignStart="@+id/btn_back2">
+    </SeekBar>
+
+    <TextView
+        android:id="@+id/textSFX"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="SFX"
+        android:textSize="30dp"
+        android:fontFamily="sans-serif-black"
+        android:textColor="#02004F"
+        android:layout_marginTop="65dp"
+        android:layout_below="@+id/optionstitle"
+        android:layout_toStartOf="@+id/musicBar" />
+
 </RelativeLayout>
