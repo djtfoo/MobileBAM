@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
-import android.os.Vibrator;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -76,7 +75,7 @@ public class Legacypage extends Activity implements View.OnClickListener {
         setContentView(R.layout.legacypage);
 
         // Week 13 Toast
-        //Toastmessage(context);
+        Toastmessage(this);
 
         // Facebook
         profile_pic = (ProfilePictureView)findViewById(R.id.picture);
@@ -101,7 +100,7 @@ public class Legacypage extends Activity implements View.OnClickListener {
         AccessTokenTracker accessTokenTracker = new AccessTokenTracker() {
             @Override
             protected void onCurrentAccessTokenChanged(AccessToken oldAccessToken, AccessToken currentAccessToken) {
-                AccessToken at = AccessToken.getCurrentAccessToken();
+                //AccessToken at = AccessToken.getCurrentAccessToken();
 
                 if (currentAccessToken == null) {
                     // user logged out
@@ -153,6 +152,7 @@ public class Legacypage extends Activity implements View.OnClickListener {
         if (v == btn_sharescore) {
             vibrator.Vibrate(50);
             sharePost();
+            toast.show();
         }
     }
 

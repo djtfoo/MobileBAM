@@ -137,6 +137,7 @@ public class Worldpanelview extends View implements SensorEventListener {
 
 
         player.update(dt * 2);
+        bossdragon.update(dt);
         rotAngle += 140 * dt;
         if (rotAngle > 360.f)
             rotAngle -= 360.f;
