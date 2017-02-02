@@ -30,8 +30,8 @@ public class Player {
         public int GetValue() { return value; }
     }
 
-    public static Player instance = null;
-    private Vector2 position = new Vector2();
+    public static Player instance = new Player();
+    private Vector2 position;
     private PLAYER_STATE state;
     private PLAYER_STATE attackState;
     private int hp;
@@ -40,16 +40,16 @@ public class Player {
     // for movement
     private int SPEED;  // movement speed
     // jump
-    private boolean isInAir = false;
-    private float jumpSpeed = 0.f;
+    private boolean isInAir;
+    private float jumpSpeed;
     private float gravity;
 
-    private boolean bStartedAttack = false;
-    private boolean bFinishedFrame0 = false;
-    private boolean bFinishedAttackAnimation = false;
-    private boolean bAttackButtonPressed = false;
-    private boolean bShootArrow = false;
-    private boolean bReleasedArrow = false;
+    private boolean bStartedAttack;
+    private boolean bFinishedFrame0;
+    private boolean bFinishedAttackAnimation;
+    private boolean bAttackButtonPressed;
+    private boolean bShootArrow;
+    private boolean bReleasedArrow;
 
     private Collider AABBCollider;
     private Collider unflippedAABBCollider;
@@ -60,9 +60,24 @@ public class Player {
     private boolean flipSprites;
 
     // Constructor
-    public Player() {
+    private Player() {
         if(instance == null)
             instance = this;
+    }
+
+    public void Init(Context context, Tilemap map, int screenWidth, int screenHeight)
+    {
+        position = new Vector2();
+
+        isInAir = false;
+        jumpSpeed = 0.f;
+
+        bStartedAttack = false;
+        bFinishedFrame0 = false;
+        bFinishedAttackAnimation = false;
+        bAttackButtonPressed = false;
+        bShootArrow = false;
+        bReleasedArrow = false;
 
         position.SetZero();
         state = PLAYER_STATE.MOVE;
@@ -70,9 +85,7 @@ public class Player {
         hp = maxHP;
 
         spriteArray = new Spriteanimation[PLAYER_STATE.STATES_TOTAL.GetValue()];
-    }
 
-    public void Init(Context context, Tilemap map, int screenWidth, int screenHeight) {
         // Load sprites
         spriteArray[PLAYER_STATE.IDLE.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
                 (BitmapFactory.decodeResource
@@ -115,8 +128,8 @@ public class Player {
         int spriteHeight = spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteHeight();
 
         //AABBcollider = new Collider(new Vector2(-spriteWidth * 0.15f, 0), new Vector2(spriteWidth * 0.05f, spriteHeight * 0.6f));
-        unflippedAABBCollider = new Collider(new Vector2(-spriteWidth * 0.15f, spriteHeight * 0.5f), new Vector2(spriteWidth * 0.05f, -spriteHeight * 0.05f));
-        flippedAABBCollider = new Collider(new Vector2(-spriteWidth * 0.05f, spriteHeight * 0.5f), new Vector2(spriteWidth * 0.15f, -spriteHeight * 0.05f));
+        unflippedAABBCollider = new Collider(new Vector2(-spriteWidth * 0.15f, -spriteHeight * 0.05f), new Vector2(spriteWidth * 0.05f, spriteHeight * 0.5f));
+        flippedAABBCollider = new Collider(new Vector2(-spriteWidth * 0.05f, -spriteHeight * 0.05f), new Vector2(spriteWidth * 0.15f, spriteHeight * 0.5f));
 
         AABBCollider = unflippedAABBCollider;
 
@@ -430,7 +443,7 @@ public class Player {
                 Projectile temp = new Projectile();
                 temp.Init(gameview.bitmapList.get("Arrow"), gameview.Screenwidth, gameview.Screenheight);
                 temp.damage = 20;
-                temp.SetPosition(new Vector2(gameview.player.GetPosition()));
+                temp.SetPosition(new Vector2(position));
                 temp.SetVelocity(gameview.RangedJoyStick.GetValue().GetNormalized().Multiply(1000));
 
                 temp.AABBCollider.SetMaxAABB(new Vector2(0.25f * Gamepanelsurfaceview.instance.map.tileSize_X, 0.25f * Gamepanelsurfaceview.instance.map.tileSize_X));

@@ -32,7 +32,8 @@ import java.util.Vector;
  * Created by Foo on 24/11/2016.
  */
 
-public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.Callback {
+public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.Callback
+{
     // Implement this interface to receive information about changes to the surface.
 
     public static Gamepanelsurfaceview instance = null;
@@ -70,7 +71,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     Vector2 pos = new Vector2();
     Tilemap map = new Tilemap();
-    Player player = new Player();
     Bossdragon bossdragon = new Bossdragon();
 
     TowerShieldgenerator testsg = new TowerShieldgenerator(100);
@@ -161,8 +161,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //Point1 = new TouchPoint();
 
         // Init Player and GameObjects/Entities
-        player.Init(context, map, Screenwidth, Screenheight);
-        player.SetPosition(2 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
+        Player.instance.Init(context, map, Screenwidth, Screenheight);
+        Player.instance.SetPosition(2 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
         bossdragon.Init(context, Screenwidth, Screenheight);
         bossdragon.SetPosition(Screenwidth / 2, Screenheight / 7 * 4);
         Gameobject.goList.add(bossdragon);
@@ -363,7 +363,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         paint.setStyle(Paint.Style.FILL_AND_STROKE);
         canvas.drawRect(1.55f * map.tileSize_X, 0.5f * map.tileSize_Y, ((map.GetCols() / 2) - 0.5f) * map.tileSize_X, 0.9f * map.tileSize_Y, paint);
 
-        float hpRatio = (float) player.GetHP() / (float) player.GetMaxHP();
+        float hpRatio = (float) Player.instance.GetHP() / (float) Player.instance.GetMaxHP();
         float hpBarStart = 1.55f * map.tileSize_X;
         float hpBarLength = ((map.GetCols() / 2) - 0.55f) * map.tileSize_X - hpBarStart;
 
@@ -477,13 +477,13 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         if(RangedJoyStick.isPressed())
         {
             Vector2 Test = RangedJoyStick.GetValue().Multiply(5000);
-            Test = Test.Add(player.GetPosition());
-            Log.v("Value", "Line Pos: " + RangedJoyStick.GetValue().ToString() + " Player Pos: " + player.GetPosition().ToString());
+            Test = Test.Add(Player.instance.GetPosition());
+            Log.v("Value", "Line Pos: " + RangedJoyStick.GetValue().ToString() + " Player Pos: " + Player.instance.GetPosition().ToString());
             Paint line = new Paint();
             line.setARGB(100, 255, 0, 0);
             line.setStyle(Paint.Style.STROKE);
             line.setStrokeWidth(10);
-            canvas.drawLine(player.GetPosition().x, player.GetPosition().y, Test.x, Test.y, line);
+            canvas.drawLine(Player.instance.GetPosition().x, Player.instance.GetPosition().y, Test.x, Test.y, line);
         }
 
         // DEBUG TEXT
@@ -516,16 +516,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     private void DrawPlayer(Canvas canvas)
     {
         // player sprite
-        player.spriteArray[player.GetState().GetValue()].setX((int) player.GetPosition().x);
-        player.spriteArray[player.GetState().GetValue()].setY((int) player.GetPosition().y);
-        player.spriteArray[player.GetState().GetValue()].draw(canvas);
+        Player.instance.spriteArray[Player.instance.GetState().GetValue()].setX((int) Player.instance.GetPosition().x);
+        Player.instance.spriteArray[Player.instance.GetState().GetValue()].setY((int) Player.instance.GetPosition().y);
+        Player.instance.spriteArray[Player.instance.GetState().GetValue()].draw(canvas);
 
         if(debugInfo)
         {
             // player AABB
-            Vector2 min = player.GetCollider().GetMinAABB();
-            Vector2 max = player.GetCollider().GetMaxAABB();
-            Vector2 playerPos = player.GetPosition();
+            Vector2 min = Player.instance.GetCollider().GetMinAABB();
+            Vector2 max = Player.instance.GetCollider().GetMaxAABB();
+            Vector2 playerPos = Player.instance.GetPosition();
 
             Paint paint = new Paint();
 
@@ -611,10 +611,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
     private boolean CollidedWithPlayer(Gameobject go)
     {
-        if(go.GetCollider().GetMinAABB().x + go.position.x < player.GetCollider().GetMaxAABB().x + player.GetPosition().x &&
-                go.GetCollider().GetMaxAABB().x + go.position.x > player.GetCollider().GetMinAABB().x + player.GetPosition().x &&
-                go.GetCollider().GetMinAABB().y + go.position.y < player.GetCollider().GetMaxAABB().y + player.GetPosition().y &&
-                go.GetCollider().GetMaxAABB().y + go.position.y > player.GetCollider().GetMinAABB().y + player.GetPosition().y)
+        if(go.GetCollider().GetMinAABB().x + go.position.x < Player.instance.GetCollider().GetMaxAABB().x + Player.instance.GetPosition().x &&
+                go.GetCollider().GetMaxAABB().x + go.position.x > Player.instance.GetCollider().GetMinAABB().x + Player.instance.GetPosition().x &&
+                go.GetCollider().GetMinAABB().y + go.position.y < Player.instance.GetCollider().GetMaxAABB().y + Player.instance.GetPosition().y &&
+                go.GetCollider().GetMaxAABB().y + go.position.y > Player.instance.GetCollider().GetMinAABB().y + Player.instance.GetPosition().y)
         {
             return true;
         }
@@ -700,11 +700,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             {
                 if(CollidedWithPlayer(go1))
                 {
-                    if(go1.type == "projectile" || go1.type == "missile")
+                    if(go1.type == "missile")
                     {
                         if( ((Missile)go1).state == Missile.MISSILE_STATE.LAUNCH)
                             continue;
-                        player.SetHP(player.GetHP() - ((Projectile)go1).damage);
+                        Player.instance.SetHP(Player.instance.GetHP() - ((Projectile)go1).damage);
                         ToBeCreated.add(go1.position);
                         go1.toBeDestroyed = true;
                         ToBeCreated.add(go1.position);
@@ -779,6 +779,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         if(BossMissileAttackTimer > 5f)
         {
+            if(Gameobject.missileList.size() < 5)
             bossdragon.SpawnMissiles();
             BossMissileAttackTimer = 0f;
         }
@@ -797,7 +798,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         FPS = 1 / dt;
         //Log.v("FPS", Float.toString(FPS));
         long dt_l = System.currentTimeMillis();
-
+        Log.v("Player Current", Player.instance.GetPosition().ToString());
+        Log.v("Player Instance", Player.instance.instance.GetPosition().ToString());
        switch (GameState) {
             case 0: {
                 // 3) Update the background to allow panning effect
@@ -807,48 +809,48 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 //}
 
                 // update sprite - make sprite animate
-                //player.spriteArray[player.GetState().GetValue()].update(dt_l);
-                if (player.GetAttackState() != Player.PLAYER_STATE.RANGED_ATTACK)
-                    player.spriteArray[player.GetState().GetValue()].update(dt);
+                //Player.instance.spriteArray[Player.instance.GetState().GetValue()].update(dt_l);
+                if (Player.instance.GetAttackState() != Player.PLAYER_STATE.RANGED_ATTACK)
+                    Player.instance.spriteArray[Player.instance.GetState().GetValue()].update(dt);
 
                 EntityUpdate(dt, dt_l);
 
-                if (player.IsDead())
+                if (Player.instance.IsDead())
                 {
                     showAlert = true;
                     winGame = false;
                 }
 
                 // Do attack things here
-                if (player.GetAttackState() == Player.PLAYER_STATE.RANGED_ATTACK) {
-                    player.DoRangedAttack(dt, this);
+                if (Player.instance.GetAttackState() == Player.PLAYER_STATE.RANGED_ATTACK) {
+                    Player.instance.DoRangedAttack(dt, this);
                 }
-                else if (player.GetAttackState() != Player.PLAYER_STATE.IDLE) {
-                    player.DoMeleeAttack(this);
+                else if (Player.instance.GetAttackState() != Player.PLAYER_STATE.IDLE) {
+                    Player.instance.DoMeleeAttack(this);
                 }
                 // get key press
-                if (player.GetAttackState() == Player.PLAYER_STATE.IDLE || player.GetAttackState() == Player.PLAYER_STATE.JUMP_ATTACK)
+                if (Player.instance.GetAttackState() == Player.PLAYER_STATE.IDLE || Player.instance.GetAttackState() == Player.PLAYER_STATE.JUMP_ATTACK)
                 {
                     if (RightButton.isPressed()) {
-                        if (player.GetAttackState() != Player.PLAYER_STATE.JUMP_ATTACK)
-                            player.SetState(Player.PLAYER_STATE.MOVE);
+                        if (Player.instance.GetAttackState() != Player.PLAYER_STATE.JUMP_ATTACK)
+                            Player.instance.SetState(Player.PLAYER_STATE.MOVE);
 
-                        player.MoveRight(deltaTime, map);
-                        player.SetFlipSprite(false);
+                        Player.instance.MoveRight(deltaTime, map);
+                        Player.instance.SetFlipSprite(false);
                     } else if (LeftButton.isPressed()) {
-                        if (player.GetAttackState() != Player.PLAYER_STATE.JUMP_ATTACK)
-                            player.SetState(Player.PLAYER_STATE.MOVE);
-                        player.MoveLeft(deltaTime, map);
-                        player.SetFlipSprite(true);
+                        if (Player.instance.GetAttackState() != Player.PLAYER_STATE.JUMP_ATTACK)
+                            Player.instance.SetState(Player.PLAYER_STATE.MOVE);
+                        Player.instance.MoveLeft(deltaTime, map);
+                        Player.instance.SetFlipSprite(true);
                     } else {    // player not pressing a moving button
-                        if (player.GetAttackState() == Player.PLAYER_STATE.IDLE) {
-                            player.SetState(Player.PLAYER_STATE.IDLE);
+                        if (Player.instance.GetAttackState() == Player.PLAYER_STATE.IDLE) {
+                            Player.instance.SetState(Player.PLAYER_STATE.IDLE);
                         }
                     }
                 }
 
                 if (JumpButton.isPressed()) {
-                    player.Jump(map);
+                    Player.instance.Jump(map);
                 }
 
                 if(SwitchButton.isPressed() && !SwitchButton.hold)
@@ -865,22 +867,22 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 if(RangedJoyStick.isPressed() && !RangedJoyStick.hold)
                 {
                     RangedJoyStick.hold = true;
-                    if (player.GetAttackState() == Player.PLAYER_STATE.IDLE)
-                        player.SetStartRangedAttack();
+                    if (Player.instance.GetAttackState() == Player.PLAYER_STATE.IDLE)
+                        Player.instance.SetStartRangedAttack();
                 }else if(!RangedJoyStick.isPressed() && RangedJoyStick.hold)
                 {
                     //On Release
                     RangedJoyStick.hold = false;
-                    player.SetShootArrow(true);
+                    Player.instance.SetShootArrow(true);
                 }
 
                 // update player movement
-                player.CheckIsInAir(map);
-                if (player.IsInAir()) {
-                    player.UpdateJump(deltaTime, map);
+                Player.instance.CheckIsInAir(map);
+                if (Player.instance.IsInAir()) {
+                    Player.instance.UpdateJump(deltaTime, map);
                 }
 
-                player.FlipSpriteAnimation();
+                Player.instance.FlipSpriteAnimation();
 
                 // Trigger Alert box
                 if (!hasShownAlert && showAlert) {
@@ -1035,9 +1037,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     Buttons[i].SetPressed(true);
 
                     // Activate unique effects of button type
-                    if (Buttons[i].GetName() == "Attack" && player.GetAttackState() == Player.PLAYER_STATE.IDLE)
+                    if (Buttons[i].GetName() == "Attack" && Player.instance.GetAttackState() == Player.PLAYER_STATE.IDLE)
                     {
-                        player.SetStartMeleeAttack();
+                        Player.instance.SetStartMeleeAttack();
                     }
                     else if (Buttons[i].GetName() == "Pause")
                     {
@@ -1135,7 +1137,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     // Activate unique effects of button type
                     if (Buttons[i].GetName() == "Attack")
                     {
-                        player.SetStartMeleeAttack();
+                        Player.instance.SetStartMeleeAttack();
                     }
                 }
 

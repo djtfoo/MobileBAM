@@ -34,5 +34,9 @@ public class Gamepage extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Gamepanelsurfaceview.instance = null;
+        Gameobject.goList.clear();
+        Gameobject.missileList.clear();
+        Gameobject.particleList.clear();
     }
 }
