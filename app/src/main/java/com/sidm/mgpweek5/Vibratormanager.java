@@ -31,6 +31,6 @@ public class Vibratormanager {
     public void Vibrate(long ms)
     {
         if (HasVibrator())
-            vibrator.vibrate(50);
+            vibrator.vibrate(ms);
     }
 }

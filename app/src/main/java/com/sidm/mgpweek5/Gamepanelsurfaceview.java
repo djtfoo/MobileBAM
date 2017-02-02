@@ -97,6 +97,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     // Week 13 Alert Dialog
     public boolean showAlert = false;
     private boolean hasShownAlert = false;
+    private boolean winGame = false;
 
     AlertDialog.Builder alert = null;
     private Alert AlertObj;
@@ -200,38 +201,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Week 13 Alert Dialog
         AlertObj = new Alert(this);
         alert = new AlertDialog.Builder(getContext());
-
-        // Allow players to input their name
-        final EditText input = new EditText(getContext());
-
-        // Define the input method where 'enter' key is disabled
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-
-        // Define max of 20 characters to be entered for 'Name' field
-        int maxLength = 20;
-        InputFilter[] FilterArray = new InputFilter[1];
-        FilterArray[0] = new InputFilter.LengthFilter(maxLength);
-        input.setFilters(FilterArray);
-
-        // Setup the alert dialog
-        alert.setTitle("You Win!");
-        alert.setMessage("Record your name");
-        alert.setCancelable(false);
-        alert.setIcon(R.drawable.icon_dragon_small);
-        alert.setView(input);
-
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            public void onClick(DialogInterface arg0, int arg1) {
-
-                Playername = input.getText().toString();
-                editName.putString("PlayerUSERID", Playername);
-                editName.commit();
-
-                Intent intent = new Intent();
-                intent.setClass(getContext(), Legacypage.class);
-                activityTracker.startActivity(intent);
-            }
-        });
     }
 
     // Week 9 Pause
@@ -770,6 +739,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         if (bossdragon.IsDead()) {
             showAlert = true;
+            winGame = true;
         }
     }
 
@@ -795,6 +765,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     player.spriteArray[player.GetState().GetValue()].update(dt);
 
                 EntityUpdate(dt, dt_l);
+
+                if (player.IsDead())
+                {
+                    showAlert = true;
+                    winGame = false;
+                }
 
                 // Do attack things here
                 if (player.GetAttackState() == Player.PLAYER_STATE.RANGED_ATTACK) {
@@ -861,6 +837,58 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
                 // Trigger Alert box
                 if (!hasShownAlert && showAlert) {
+
+                    // Allow players to input their name
+                    final EditText input = new EditText(getContext());
+
+                    // Define the input method where 'enter' key is disabled
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+
+                    // Define max of 20 characters to be entered for 'Name' field
+                    int maxLength = 20;
+                    InputFilter[] FilterArray = new InputFilter[1];
+                    FilterArray[0] = new InputFilter.LengthFilter(maxLength);
+                    input.setFilters(FilterArray);
+
+                    // Setup the alert dialog
+                    if (winGame)
+                    {
+                        alert.setTitle("You Win!");
+                        alert.setMessage("Record your name");
+                        alert.setCancelable(false);
+                        alert.setIcon(R.drawable.icon_player_small);
+                        alert.setView(input);
+
+                        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface arg0, int arg1) {
+
+                                Playername = input.getText().toString();
+                                editName.putString("PlayerUSERID", Playername);
+                                editName.commit();
+
+                                Intent intent = new Intent();
+                                intent.setClass(getContext(), Legacypage.class);
+                                activityTracker.startActivity(intent);
+                            }
+                        });
+                    }
+                    else
+                    {
+                        alert.setTitle("You Lose...");
+                        alert.setMessage("Return to Level Select");
+                        alert.setCancelable(false);
+                        alert.setIcon(R.drawable.icon_dragon_small);
+
+                        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface arg0, int arg1) {
+
+                                Intent intent = new Intent();
+                                intent.setClass(getContext(), Worldmappage.class);
+                                activityTracker.startActivity(intent);
+                            }
+                        });
+                    }
+
                     AlertObj.RunAlert();
                     showAlert = false;
                     hasShownAlert = true;
