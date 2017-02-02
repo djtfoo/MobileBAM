@@ -684,10 +684,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         if(goB.type == "missile")
                             continue;
                     }
+
                     if(!go1.shielded)
                     {
-                        go1.toBeDestroyed = true;
+                        ((Tower)go1).SetHP(((Tower)go1).GetHP() - ((Projectile)go2).damage);
+                        if(((Tower)go1).GetHP() <= 0)
+                            go1.toBeDestroyed = true;
                         ToBeCreated.add(go1.position);
+
                     }
                     if(!go2.shielded)
                     {
