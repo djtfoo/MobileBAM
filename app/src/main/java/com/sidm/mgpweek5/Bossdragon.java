@@ -24,7 +24,7 @@ public class Bossdragon extends Entity {
         public int GetValue() { return value; }
     }
 
-    public Collider[] HitBoxes;
+    public Gameobject[] HitBoxes;
 
     private BOSSDRAGON_STATE state;
 
@@ -46,11 +46,12 @@ public class Bossdragon extends Entity {
         int spriteWidth = spriteArray[Bossdragon.BOSSDRAGON_STATE.IDLE.GetValue()].getSpriteWidth();
         int spriteHeight = spriteArray[Bossdragon.BOSSDRAGON_STATE.IDLE.GetValue()].getSpriteHeight();
 
-        HitBoxes = new Collider[1];
+        HitBoxes = new Gameobject[1];
 
-        HitBoxes[0] = new Collider();
-        HitBoxes[0].SetMaxAABB(new Vector2(spriteWidth * 0.083f - (spriteWidth * 0.362f), spriteHeight * 0.135f +spriteHeight*0.056f));
-        HitBoxes[0].SetMinAABB(new Vector2(-(spriteWidth * 0.083f) - (spriteWidth * 0.362f), -(spriteHeight * 0.135f) +spriteHeight*0.056f));
+        HitBoxes[0] = new Gameobject();
+        HitBoxes[0].AABBCollider.SetMaxAABB(new Vector2(spriteWidth * 0.083f , spriteHeight * 0.135f));
+        HitBoxes[0].AABBCollider.SetMinAABB(new Vector2(-(spriteWidth * 0.083f) , -(spriteHeight * 0.135f)));
+        HitBoxes[0].position.Set(screenWidth / 2 - (spriteWidth * 0.362f), (screenHeight / 7 * 4) +spriteHeight*0.056f);
 
         //spriteArray[Bossdragon.BOSSDRAGON_STATE.IDLE.GetValue()] = new Spriteanimation(Bitmap.createScaledBitmap
         //        (BitmapFactory.decodeResource

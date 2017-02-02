@@ -168,6 +168,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         testsg.SetPosition(3 * map.tileSize_X, (map.GetRows() - 6) * map.tileSize_Y);
         Gameobject.goList.add(testsg);
 
+        testsg = new TowerShieldgenerator(100);
+        testsg.Init(context, Screenwidth, Screenheight);
+        testsg.SetPosition(14 * map.tileSize_X, (map.GetRows() - 5) * map.tileSize_Y);
+        Gameobject.goList.add(testsg);
         // Create the game loop thread
         myThread = new Gamethread(getHolder(), this);
 
@@ -470,9 +474,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 Paint paint = new Paint();
 
                 // go AABB
-                Vector2 min = bossdragon.HitBoxes[i].GetMinAABB();
-                Vector2 max = bossdragon.HitBoxes[i].GetMaxAABB();
-                Vector2 goPos = bossdragon.position;
+                Vector2 min = bossdragon.HitBoxes[i].AABBCollider.GetMinAABB();
+                Vector2 max = bossdragon.HitBoxes[i].AABBCollider.GetMaxAABB();
+                Vector2 goPos = bossdragon.HitBoxes[i].GetPosition();
 
                 paint.setColor(Color.RED);
                 paint.setStrokeWidth(5);
@@ -568,17 +572,19 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         Paint paint = new Paint();
 
-        // go AABB
-        Vector2 min = go.GetCollider().GetMinAABB();
-        Vector2 max = go.GetCollider().GetMaxAABB();
-        Vector2 goPos = go.GetPosition();
+        if(debugInfo) {
+            // go AABB
+            Vector2 min = go.GetCollider().GetMinAABB();
+            Vector2 max = go.GetCollider().GetMaxAABB();
+            Vector2 goPos = go.GetPosition();
 
-        paint.setColor(Color.RED);
-        paint.setStrokeWidth(5);
-        paint.setStyle(Paint.Style.STROKE);
-        // sequence is minX, maxY, maxX, minY, where min point is the top left corner
-        canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
-                goPos.x + max.x, goPos.y + min.y, paint);
+            paint.setColor(Color.RED);
+            paint.setStrokeWidth(5);
+            paint.setStyle(Paint.Style.STROKE);
+            // sequence is minX, maxY, maxX, minY, where min point is the top left corner
+            canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
+                    goPos.x + max.x, goPos.y + min.y, paint);
+        }
 
         if(go.type == "shieldgenerator")
         {
@@ -593,7 +599,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     temp.shielded = true;
                     canvas.drawLine(go.position.x, go.position.y, temp.position.x, temp.position.y, line);
+                    canvas.drawCircle(go.position.x, go.position.y, go.GetCollider().GetMaxAABB().y, line);
                 }
+            }
+
+            if( bossdragon.HitBoxes[0].position.Subtract(go.position).GetLength() < map.tileSize_X * 4 )
+            {
+                bossdragon.shielded = true;
+                canvas.drawLine(go.position.x, go.position.y, bossdragon.HitBoxes[0].position.x, bossdragon.HitBoxes[0].position.y, line);
+                canvas.drawCircle(bossdragon.HitBoxes[0].position.x, bossdragon.HitBoxes[0].position.y, bossdragon.HitBoxes[0].GetCollider().GetMaxAABB().y, line);
             }
         }
     }
@@ -654,12 +668,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     Bossdragon temp = (Bossdragon)goA;
                     for(int k = 0; k < 1; k++)
                     {
-                        temp.AABBCollider = temp.HitBoxes[k];
-                        if (Collided(temp, goB))
+                        if (Collided(bossdragon.HitBoxes[k], goB))
                         {
                             if(goB.type == "projectile" || goB.type == "missile")
                             {
-                                temp.SetHP(temp.GetHP() - ((Projectile)goB).damage);
+                                if(!bossdragon.shielded)
+                                bossdragon.SetHP(temp.GetHP() - ((Projectile)goB).damage);
                             }
                             goB.toBeDestroyed = true;
                             break;
@@ -669,7 +683,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     if(go1.type == "missile" && go2.type == "missile")
                         continue;
+                    if(!go1.shielded)
                     go1.toBeDestroyed = true;
+                    if(!go2.shielded)
                     go2.toBeDestroyed = true;
                 }
             }
