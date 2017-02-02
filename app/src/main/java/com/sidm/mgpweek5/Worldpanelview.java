@@ -12,7 +12,6 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-import android.os.Vibrator;
 import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.View;
@@ -33,6 +32,7 @@ public class Worldpanelview extends View implements SensorEventListener {
     private long lastTime = System.currentTimeMillis();
 
     private Vibratormanager vibrator;
+    private Soundmanager soundmanager;
 
     int Screenwidth, Screenheight;
     float unitX;     // 1 unit in 16:9 resolution
@@ -53,6 +53,8 @@ public class Worldpanelview extends View implements SensorEventListener {
     Spriteanimation player;
     Vector2 playerPos = new Vector2();
 
+    private boolean isInFrontOfPortal = false;
+
     float rotAngle = 0.f;
 
     // Activity
@@ -66,6 +68,7 @@ public class Worldpanelview extends View implements SensorEventListener {
         Screenheight = metrics.heightPixels;
 
         vibrator = new Vibratormanager(context);
+        soundmanager = new Soundmanager(context);
 
         //bg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.worldmap), 1920, 1080, true);
         redPortal = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.portal_red), Screenwidth / 2, Screenheight, true);
@@ -135,12 +138,22 @@ public class Worldpanelview extends View implements SensorEventListener {
         dt = (currentTime - lastTime) / 1000.f;
         lastTime = currentTime;
 
-
         player.update(dt * 2);
         bossdragon.update(dt);
         rotAngle += 140 * dt;
         if (rotAngle > 360.f)
             rotAngle -= 360.f;
+
+        if (playerPos.x <= 0.375f * Screenwidth || playerPos.x >= 0.625f * Screenwidth)
+        {
+            if (!isInFrontOfPortal)
+                soundmanager.PlaySFXPortal();
+            isInFrontOfPortal = true;
+        }
+        else
+        {
+            isInFrontOfPortal = false;
+        }
 
         //canvas.drawBitmap(bg, 0, 0, null);
 
@@ -180,7 +193,7 @@ public class Worldpanelview extends View implements SensorEventListener {
         player.draw(canvas);
 
         // if player is at a portal, render guiding text
-        if (playerPos.x < 0.375f * Screenwidth|| playerPos.x > 0.625f * Screenwidth)
+        if (isInFrontOfPortal)
         {
             RenderTextOnScreen(canvas, "Tap to Enter Portal", (int)(Screenwidth * 0.35f), (int) (Screenheight * 0.32f), textSize);
         }

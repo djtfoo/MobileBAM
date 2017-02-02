@@ -34,5 +34,6 @@ public class Gamepage extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        Gamepanelsurfaceview.instance = new Gamepanelsurfaceview(this, this);
     }
 }
