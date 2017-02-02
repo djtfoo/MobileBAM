@@ -39,4 +39,16 @@ public class Collider {
     {
         maxAABB = max;
     }
+
+    public static boolean CheckPointToAABB(Vector2 point, Gameobject go)
+    {
+        if(point.x < go.GetCollider().GetMaxAABB().x + go.position.x && point.x > go.GetCollider().GetMinAABB().x + go.position.x
+                && point.y < go.GetCollider().GetMaxAABB().y + go.position.y && point.y > go.GetCollider().GetMinAABB().y + go.position.y)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
 }

@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.CompoundButton;
 import android.widget.SeekBar;
 import android.widget.Switch;
 
@@ -105,6 +106,15 @@ public class Optionspage extends Activity implements View.OnClickListener, SeekB
         editVibration = SharedPref_vibration.edit();
         vibration = SharedPref_vibration.getBoolean("Vibration", true);
 
+        vibrationSwitch = (Switch)findViewById(R.id.vibrationSwitch);
+        vibrationSwitch.setChecked(vibration);
+        vibrationSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                vibration = isChecked;
+                vibrator.Vibrate(50);
+            }
+        });
 
         btn_back2 = (Button)findViewById(R.id.btn_back2);
         btn_back2.setOnClickListener(this);

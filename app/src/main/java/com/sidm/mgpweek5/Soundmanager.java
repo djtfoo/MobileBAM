@@ -20,6 +20,8 @@ public class Soundmanager {
     private int SFXportal;
     private int SFXJump;
     private int SFXArrowShot;
+    private int SFXMissileLaunch;
+    private int SFXExplosion;
 
     SharedPreferences SharedPref_musicVol;
     int musicVol;
@@ -43,6 +45,8 @@ public class Soundmanager {
         SFXportal = Sounds.load(context, R.raw.portal_sfx, 1);
         SFXJump = Sounds.load(context, R.raw.jump_sfx, 1);
         SFXArrowShot = Sounds.load(context, R.raw.arrowshot_sfx, 1);
+        SFXMissileLaunch = Sounds.load(context, R.raw.missilelaunch_sfx, 1);
+        SFXExplosion = Sounds.load(context, R.raw.explosion_sfx, 1);
 
         SharedPref_musicVol = context.getSharedPreferences("MusicVolume", Context.MODE_PRIVATE);
         musicVol = SharedPref_musicVol.getInt("MusicVolume", 100);
@@ -91,6 +95,18 @@ public class Soundmanager {
     {
         float volume = sfxVol / 100.f;
         Sounds.play(SFXArrowShot, volume, volume, 0, 0, 1.5f);
+    }
+
+    public void PlaySFXMissileLaunch()
+    {
+        float volume = sfxVol / 100.f;
+        Sounds.play(SFXMissileLaunch, volume, volume, 0, 0, 1.5f);
+    }
+
+    public void PlaySFXExplosion()
+    {
+        float volume = sfxVol / 100.f;
+        Sounds.play(SFXExplosion, volume, volume, 0, 0, 1.5f);
     }
 
     public void Exit()

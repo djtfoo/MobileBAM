@@ -30,7 +30,7 @@ public class Vibratormanager {
 
     public void Vibrate(long ms)
     {
-        if (HasVibrator())
+        if (HasVibrator() && vibration)
             vibrator.vibrate(ms);
     }
 }

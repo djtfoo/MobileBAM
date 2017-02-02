@@ -158,7 +158,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 (int) (2f * map.tileSize_X) * 4, (int) (2f * map.tileSize_X), true));
 
         InitButtons();
-        //Point1 = new TouchPoint();
 
         // Init Player and GameObjects/Entities
         Player.instance.Init(context, map, Screenwidth, Screenheight);
@@ -166,8 +165,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         bossdragon.Init(context, Screenwidth, Screenheight);
         bossdragon.SetPosition(Screenwidth / 2, Screenheight / 7 * 4);
         Gameobject.goList.add(bossdragon);
-
-        //Gameobject.goList.add(bossdragon);
 
         testsg.Init(context, Screenwidth, Screenheight);
         testsg.SetPosition(3 * map.tileSize_X, (map.GetRows() - 6) * map.tileSize_Y);
@@ -435,7 +432,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 DrawGameobject(canvas, go);
         }
 
-        if (debugInfo)
+        if (debugInfo || (!debugInfo && bossdragon.shielded))
         {
             for(int i = 0; i < 1; i++)
             {
@@ -717,6 +714,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         }
 
         // Spawn stuff here lmao
+        if (ToBeCreated.size() > 0)
+            soundmanager.PlaySFXExplosion();
+
         while(ToBeCreated.size() > 0)
         {
             Particle temp = new Particle();
@@ -785,6 +785,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             if(Gameobject.missileList.size() < 5)
             bossdragon.SpawnMissiles();
             BossMissileAttackTimer = 0f;
+            soundmanager.PlaySFXMissileLaunch();
         }
 
 
@@ -801,16 +802,14 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         FPS = 1 / dt;
         //Log.v("FPS", Float.toString(FPS));
         long dt_l = System.currentTimeMillis();
-        Log.v("Player Current", Player.instance.GetPosition().ToString());
-        Log.v("Player Instance", Player.instance.instance.GetPosition().ToString());
+
+        if (dt > 1f)
+        {
+            dt = 0.01333f;
+        }
+
        switch (GameState) {
             case 0: {
-                // 3) Update the background to allow panning effect
-                //bgX -= 200 * deltaTime;      // temp value to speed the panning
-                //if (bgX < -Screenwidth) {
-                //    bgX = 0;
-                //}
-
                 // update sprite - make sprite animate
                 //Player.instance.spriteArray[Player.instance.GetState().GetValue()].update(dt_l);
                 if (Player.instance.GetAttackState() != Player.PLAYER_STATE.RANGED_ATTACK)

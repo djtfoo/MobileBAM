@@ -4,6 +4,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 
+import java.util.Vector;
+
 /**
  * Created by Foo on 3/12/2016.
  */
@@ -379,12 +381,69 @@ public class Player {
         spriteArray[attackState.GetValue()].resetAnimation();
     }
 
+    Vector<Vector2> ToBeCreated =  new Vector<Vector2>();
+
     // Attack
     public void DoMeleeAttack(Gamepanelsurfaceview gameview) {
         if (bStartedAttack)
         {
             gameview.soundmanager.PlaySFXSlash1();
-            gameview.bossdragon.TakeDamage(50);
+            //gameview.bossdragon.TakeDamage(50);
+
+            int spriteWidth = spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth();
+            Vector2 point = new Vector2();
+
+            if (flipSprites)    // facing left
+                point.Set(position.x - spriteWidth * 0.1f, position.y);
+            else
+                point.Set(position.x + spriteWidth * 0.2f, position.y);
+
+            for(int i = 0; i < Gameobject.goList.size(); i++)
+            {
+                Gameobject go = Gameobject.goList.get(i);
+
+                if (go.toBeDestroyed)
+                    continue;
+
+                if (Collider.CheckPointToAABB(point, go))
+                {
+                    if (go.type == "boss") {
+                        Bossdragon bd = (Bossdragon)go;
+                        bd.TakeDamage(50);
+                        if (bd.IsDead()) {
+                            bd.toBeDestroyed = true;
+                        }
+                        ToBeCreated.add(go.position);
+                    }
+                    else if (go.type == "shieldgenerator") {
+                        TowerShieldgenerator tsg = (TowerShieldgenerator)go;
+                        tsg.TakeDamage(25);
+                        if (tsg.IsDead()) {
+                            tsg.toBeDestroyed = true;
+                        }
+                        ToBeCreated.add(go.position);
+                    }
+                    else if (go.type == "missile") {
+                        Missile missile = (Missile)go;
+                        missile.toBeDestroyed = true;
+                        ToBeCreated.add(go.position);
+                    }
+                }
+            }
+
+            // Spawn stuff here lmao
+            if (ToBeCreated.size() > 0)
+                gameview.soundmanager.PlaySFXExplosion();
+
+            while(ToBeCreated.size() > 0)
+            {
+                Particle temp = new Particle();
+                temp.Init();
+                temp.position = ToBeCreated.lastElement();
+                Gameobject.particleList.add(temp);
+                ToBeCreated.remove(ToBeCreated.lastElement());
+            }
+
             bStartedAttack = false;
         }
 
