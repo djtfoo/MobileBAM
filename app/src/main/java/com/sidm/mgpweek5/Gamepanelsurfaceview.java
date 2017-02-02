@@ -26,6 +26,7 @@ import android.widget.EditText;
 
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Vector;
 
 /**
  * Created by Foo on 24/11/2016.
@@ -151,7 +152,10 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 (int) (0.5f * map.tileSize_X), (int) (0.5f * map.tileSize_X), true));
 
         bitmapList.put("Missile", Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.missile),
-                (int) (2 * map.tileSize_X), (int) (2 * map.tileSize_X), true));
+                (int) (2f * map.tileSize_X), (int) (2f * map.tileSize_X), true));
+
+        bitmapList.put("explosion", Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.explosion),
+                (int) (2f * map.tileSize_X) * 4, (int) (2f * map.tileSize_X), true));
 
         InitButtons();
         //Point1 = new TouchPoint();
@@ -455,6 +459,12 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // draw the player
         DrawPlayer(canvas);
 
+        for (int i = 0; i < Gameobject.particleList.size(); ++i)
+        {
+            Gameobject go = Gameobject.particleList.get(i);
+            DrawGameobject(canvas, go);
+        }
+
         // HUD
         RenderButtons(canvas);
         // Player
@@ -612,6 +622,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return false;
     }
 
+    Vector<Vector2> ToBeCreated =  new Vector<Vector2>();
+
     private void CheckForCollision()
     {
         for(int i = 0; i < Gameobject.goList.size(); i++)
@@ -647,6 +659,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                             {
                                 if(!bossdragon.shielded)
                                 bossdragon.SetHP(temp.GetHP() - ((Projectile)goB).damage);
+                                ToBeCreated.add(goB.position);
                                 goB.toBeDestroyed = true;
                             }
                             break;
@@ -672,9 +685,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                             continue;
                     }
                     if(!go1.shielded)
-                    go1.toBeDestroyed = true;
+                    {
+                        go1.toBeDestroyed = true;
+                        ToBeCreated.add(go1.position);
+                    }
                     if(!go2.shielded)
-                    go2.toBeDestroyed = true;
+                    {
+                        go2.toBeDestroyed = true;
+                        ToBeCreated.add(go2.position);
+                    }
                 }
             }
             if(!go1.toBeDestroyed)
@@ -686,11 +705,24 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         if( ((Missile)go1).state == Missile.MISSILE_STATE.LAUNCH)
                             continue;
                         player.SetHP(player.GetHP() - ((Projectile)go1).damage);
+                        ToBeCreated.add(go1.position);
                         go1.toBeDestroyed = true;
+                        ToBeCreated.add(go1.position);
                     }
                 }
             }
         }
+
+        // Spawn stuff here lmao
+        while(ToBeCreated.size() > 0)
+        {
+            Particle temp = new Particle();
+            temp.Init();
+            temp.position = ToBeCreated.lastElement();
+            Gameobject.particleList.add(temp);
+            ToBeCreated.remove(ToBeCreated.lastElement());
+        }
+
     }
 
     private void EntityUpdate(float dt, long dt_l)
@@ -699,6 +731,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         for (int i = 0; i < Gameobject.goList.size(); ++i)
         {
             Gameobject.goList.get(i).Update(dt);
+        }
+
+        for (int i =0 ;i < Gameobject.particleList.size(); ++i)
+        {
+            Gameobject.particleList.get(i).Update(dt);
         }
 
         CheckForCollision();
@@ -720,6 +757,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             if(temp.toBeDestroyed)
                 missileItr.remove();
         }
+
+        Iterator<Particle> particleItr = Gameobject.particleList.iterator();
+
+        while(particleItr.hasNext())
+        {
+            Particle temp = particleItr.next();
+            if(temp.toBeDestroyed)
+                particleItr.remove();
+        }
+
     }
 
 

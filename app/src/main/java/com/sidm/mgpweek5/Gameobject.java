@@ -19,6 +19,7 @@ public class Gameobject {
     // GameObject List
     public static Vector<Gameobject> goList = new Vector<Gameobject>();
     public static Vector<Missile> missileList = new Vector<Missile>();
+    public static Vector<Particle> particleList = new Vector<Particle>();
 
     // constructor
     protected Gameobject() {

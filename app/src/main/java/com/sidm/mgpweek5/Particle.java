@@ -15,15 +15,13 @@ public class Particle extends Gameobject
     {
         super();
         spriteArray = new Spriteanimation[1];
+        type = "particle";
     };
 
-    public void Init(Context context, int screenWidth, int screenHeight)
+    public void Init()
     {
         hasCollider = false;
-        spriteArray[0] = new Spriteanimation(Bitmap.createScaledBitmap
-                (BitmapFactory.decodeResource
-                                (context.getResources(), R.drawable.explosion),
-                        (int)(screenWidth * 0.1f), (int)(screenHeight * 0.1f), true), 0, 0, 15, 4);
+        spriteArray[0] = new Spriteanimation(Gamepanelsurfaceview.instance.bitmapList.get("explosion"), 0, 0, 8, 4);
     }
 
     public void Update(float dt)
