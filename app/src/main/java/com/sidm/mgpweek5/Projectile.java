@@ -12,6 +12,7 @@ public class Projectile extends Gameobject {
 
     private double lifespan;
     private final double maxLifespan = 10.0;
+    public int damage;
 
     // Constructor
     public Projectile() {

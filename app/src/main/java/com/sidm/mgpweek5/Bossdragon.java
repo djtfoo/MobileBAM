@@ -58,6 +58,14 @@ public class Bossdragon extends Entity {
         //                2, 2, true), 0, 0, 4, 4);
     }
 
+    public void SpawnMissiles()
+    {
+        Missile temp = new Missile();
+        temp.Init();
+        temp.position = new Vector2(Gamepanelsurfaceview.instance.Screenwidth / 2.f, Gamepanelsurfaceview.instance.Screenwidth / 2.f);
+        Gameobject.goList.add(temp);
+    }
+
     BOSSDRAGON_STATE GetState() {
         return state;
     }

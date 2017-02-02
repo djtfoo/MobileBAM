@@ -26,5 +26,6 @@ public class TowerShieldgenerator extends Tower {
 
         AABBCollider.SetMinAABB(new Vector2(-spriteWidth * 0.2f, -spriteHeight * 0.5f));
         AABBCollider.SetMaxAABB(new Vector2(spriteWidth * 0.2f, spriteHeight * 0.5f));
+        type = "shieldgenerator";
     }
 }

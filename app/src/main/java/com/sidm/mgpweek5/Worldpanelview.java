@@ -49,6 +49,7 @@ public class Worldpanelview extends View implements SensorEventListener {
     Bitmap homeText;
     Spriteanimation bossdragon;
     Spriteanimation player;
+    Vector2 playerPos = new Vector2();
 
     float rotAngle = 0.f;
 
@@ -61,7 +62,6 @@ public class Worldpanelview extends View implements SensorEventListener {
         DisplayMetrics metrics = context.getResources().getDisplayMetrics();
         Screenwidth = metrics.widthPixels;
         Screenheight = metrics.heightPixels;
-
 
         //bg = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.worldmap), 1920, 1080, true);
         redPortal = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.portal_red), Screenwidth / 2, Screenheight, true);
@@ -81,6 +81,8 @@ public class Worldpanelview extends View implements SensorEventListener {
         sensor.registerListener(this, sensor.getSensorList(Sensor.TYPE_ACCELEROMETER).get(0),
                 SensorManager.SENSOR_DELAY_NORMAL);
         ball = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.testball), Screenwidth / 6, Screenheight / 6, true);
+
+        playerPos.Set(Screenwidth * 0.5f, Screenheight * 0.8f);
 
         BackButton = new GUIbutton("Back");
         BossDragonButton = new GUIbutton("BossDragon");
@@ -142,8 +144,8 @@ public class Worldpanelview extends View implements SensorEventListener {
         canvas.drawBitmap(arch, 0, 0, null);
 
         // player
-        player.setX((int)(Screenwidth * 0.5f));
-        player.setY((int)(Screenheight * 0.8f));
+        player.setX((int)playerPos.x);
+        player.setY((int)playerPos.y);
         player.draw(canvas);
 
         // Week 14 Accelerometer test ball
@@ -250,6 +252,9 @@ public class Worldpanelview extends View implements SensorEventListener {
     // Week 14 Accelerometer - method to implement and use
     public void SensorMove()
     {
+        //float newX = ;
+
+
         float testX, testY;
 
         testX = ballCoord.x + (values[1] * ((System.currentTimeMillis() - lastTime) / 1000));

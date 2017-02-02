@@ -30,6 +30,7 @@ public class Player {
         public int GetValue() { return value; }
     }
 
+    public static Player instance = null;
     private Vector2 position = new Vector2();
     private PLAYER_STATE state;
     private PLAYER_STATE attackState;
@@ -60,6 +61,9 @@ public class Player {
 
     // Constructor
     public Player() {
+        if(instance == null)
+            instance = this;
+
         position.SetZero();
         state = PLAYER_STATE.MOVE;
         attackState = PLAYER_STATE.IDLE;
@@ -425,9 +429,12 @@ public class Player {
             {
                 Projectile temp = new Projectile();
                 temp.Init(gameview.bitmapList.get("Arrow"), gameview.Screenwidth, gameview.Screenheight);
+                temp.damage = 20;
                 temp.SetPosition(new Vector2(gameview.player.GetPosition()));
                 temp.SetVelocity(gameview.RangedJoyStick.GetValue().GetNormalized().Multiply(1000));
 
+                temp.AABBCollider.SetMaxAABB(new Vector2(0.25f * Gamepanelsurfaceview.instance.map.tileSize_X, 0.25f * Gamepanelsurfaceview.instance.map.tileSize_X));
+                temp.AABBCollider.SetMinAABB(new Vector2(-0.25f * Gamepanelsurfaceview.instance.map.tileSize_X, -0.25f * Gamepanelsurfaceview.instance.map.tileSize_X));
                 //Matrix matrix = new Matrix();
                 //matrix.postRotate(angle);
                 //Bitmap.createBitmap(dt, 0, 0, source.getWidth(), source.getHeight(), matrix, true);

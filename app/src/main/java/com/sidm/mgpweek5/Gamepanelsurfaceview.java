@@ -12,6 +12,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
 import android.text.InputFilter;
 import android.text.InputType;
 import android.util.DisplayMetrics;
@@ -20,6 +21,7 @@ import android.view.MotionEvent;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import android.os.Vibrator;
+import android.view.ViewGroup;
 import android.widget.EditText;
 
 import java.util.HashMap;
@@ -31,6 +33,8 @@ import java.util.Iterator;
 
 public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.Callback {
     // Implement this interface to receive information about changes to the surface.
+
+    public static Gamepanelsurfaceview instance = null;
 
     private Gamethread myThread = null; // Thread to control the rendering
     private Vibrator vibrator = (Vibrator) this.getContext().getSystemService(Context.VIBRATOR_SERVICE);
@@ -106,6 +110,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // Context is the current state of the application/object
         super(context);
 
+        if(instance == null)
+            instance = this;
         // Adding the callback (this) to the surface holder to intercept events
         getHolder().addCallback(this);
 
@@ -139,6 +145,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         bitmapList.put("Arrow", Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.projectile_turret),
                 (int) (0.5f * map.tileSize_X), (int) (0.5f * map.tileSize_X), true));
 
+        bitmapList.put("Missile", Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.missile),
+                (int) (2 * map.tileSize_X), (int) (2 * map.tileSize_X), true));
+
         InitButtons();
         //Point1 = new TouchPoint();
 
@@ -152,7 +161,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         //Gameobject.goList.add(bossdragon);
 
         testsg.Init(context, Screenwidth, Screenheight);
-        testsg.SetPosition(14 * map.tileSize_X, (map.GetRows() - 2) * map.tileSize_Y);
+        testsg.SetPosition(3 * map.tileSize_X, (map.GetRows() - 6) * map.tileSize_Y);
         Gameobject.goList.add(testsg);
 
         // Create the game loop thread
@@ -215,6 +224,11 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 activityTracker.startActivity(intent);
             }
         });
+
+        Missile testmissile = new Missile();
+        testmissile.Init();
+        testmissile.position = new Vector2(Screenwidth / 2.f, Screenwidth / 2.f);
+        Gameobject.goList.add(testmissile);
     }
 
     // Week 9 Pause
@@ -416,7 +430,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // draw the boss enemy
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setX((int) bossdragon.GetPosition().x);
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setY((int) bossdragon.GetPosition().y);
-        bossdragon.spriteArray[bossdragon.GetState().GetValue()].draw(canvas);
 
         for(int i = 0; i < 1; i++)
         {
@@ -437,6 +450,15 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         }
 
+        for(int i = 0; i < Gameobject.missileList.size(); ++i)
+        {
+            Missile go = (Missile)Gameobject.missileList.get(i);
+            if(go.state == Missile.MISSILE_STATE.LAUNCH)
+            DrawGameobject(canvas, go);
+        }
+
+        bossdragon.spriteArray[bossdragon.GetState().GetValue()].draw(canvas);
+
         // draw the tilemap
         drawTilemap(canvas);
 
@@ -444,7 +466,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         for (int i = 0; i < Gameobject.goList.size(); ++i)
         {
             Gameobject go = Gameobject.goList.get(i);
+            if(go.type == "boss" || go.type == "missile")
+                continue;
             DrawGameobject(canvas, go);
+        }
+
+        for(int i =0; i < Gameobject.missileList.size(); ++i)
+        {
+            Missile go = (Missile)Gameobject.missileList.get(i);
+            if(go.state == Missile.MISSILE_STATE.TRACKING)
+                DrawGameobject(canvas, go);
         }
 
         // draw the player
@@ -513,6 +544,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         paint.setColor(Color.RED);
         paint.setStrokeWidth(5);
         paint.setStyle(Paint.Style.STROKE);
+
         // sequence is minX, maxY, maxX, minY, where min point is the top left corner
         canvas.drawRect(playerPos.x + min.x, playerPos.y + max.y,
                 playerPos.x + max.x, playerPos.y + min.y, paint);
@@ -539,6 +571,23 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         // sequence is minX, maxY, maxX, minY, where min point is the top left corner
         canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
                 goPos.x + max.x, goPos.y + min.y, paint);
+
+        if(go.type == "shieldgenerator")
+        {
+            Paint line = new Paint();
+            line.setARGB(255, 150, 150, 255);
+            line.setStyle(Paint.Style.STROKE);
+            line.setStrokeWidth(10);
+            for(int i = 0; i < Gameobject.missileList.size(); ++i)
+            {
+                Missile temp = Gameobject.missileList.get(i);
+                if( temp.position.Subtract(go.position).GetLength() < map.tileSize_X * 4 )
+                {
+                    temp.shielded = true;
+                    canvas.drawLine(go.position.x, go.position.y, temp.position.x, temp.position.y, line);
+                }
+            }
+        }
     }
 
 
@@ -555,14 +604,31 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         return false;
     }
 
+    private boolean CollidedWithPlayer(Gameobject go)
+    {
+        if(go.GetCollider().GetMinAABB().x + go.position.x < player.GetCollider().GetMaxAABB().x + player.GetPosition().x &&
+                go.GetCollider().GetMaxAABB().x + go.position.x > player.GetCollider().GetMinAABB().x + player.GetPosition().x &&
+                go.GetCollider().GetMinAABB().y + go.position.y < player.GetCollider().GetMaxAABB().y + player.GetPosition().y &&
+                go.GetCollider().GetMaxAABB().y + go.position.y > player.GetCollider().GetMinAABB().y + player.GetPosition().y)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     private void CheckForCollision()
     {
         for(int i = 0; i < Gameobject.goList.size(); i++)
         {
             Gameobject go1 = Gameobject.goList.get(i);
+            if(!go1.hasCollider)
+                continue;
             for(int j = 0; j < Gameobject.goList.size(); j++)
             {
                 Gameobject go2 = Gameobject.goList.get(j);
+                if(!go2.hasCollider)
+                    continue;
                 if(go1 == go2 || go2.toBeDestroyed || go1.toBeDestroyed)
                     continue;
 
@@ -577,29 +643,45 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                         goA = go2;
                         goB = go1;
                     }
-
                     Bossdragon temp = (Bossdragon)goA;
                     for(int k = 0; k < 1; k++)
                     {
                         temp.AABBCollider = temp.HitBoxes[k];
                         if (Collided(temp, goB))
                         {
-                            temp.SetHP(temp.GetHP() - 20);
+                            if(goB.type == "projectile" || goB.type == "missile")
+                            {
+                                temp.SetHP(temp.GetHP() - ((Projectile)goB).damage);
+                            }
                             goB.toBeDestroyed = true;
                             break;
                         }
                     }
                 }else if(Collided(go1, go2))
                 {
+                    if(go1.type == "missile" && go2.type == "missile")
+                        continue;
                     go1.toBeDestroyed = true;
                     go2.toBeDestroyed = true;
+                }
+            }
+            if(!go1.toBeDestroyed)
+            {
+                if(CollidedWithPlayer(go1))
+                {
+                    if(go1.type == "projectile" || go1.type == "missile")
+                    {
+                        player.SetHP(player.GetHP() - ((Projectile)go1).damage);
+                        go1.toBeDestroyed = true;
+                    }
                 }
             }
         }
     }
 
-    private void EntityUpdate(float dt)
+    private void EntityUpdate(float dt, long dt_l)
     {
+        BossUpdate(dt, dt_l);
         for (int i = 0; i < Gameobject.goList.size(); ++i)
         {
             Gameobject.goList.get(i).Update(dt);
@@ -614,6 +696,35 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             Gameobject temp = goItr.next();
             if(temp.toBeDestroyed)
                 goItr.remove();
+        }
+
+        Iterator<Missile> missileItr = Gameobject.missileList.iterator();
+
+        while(missileItr.hasNext())
+        {
+            Missile temp = missileItr.next();
+            if(temp.toBeDestroyed)
+                missileItr.remove();
+        }
+    }
+
+
+    private float BossMissileAttackTimer = 0f;
+
+    private void BossUpdate(float dt, long gameTime)
+    {
+        //bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(gameTime);
+        BossMissileAttackTimer += dt;
+
+        if(BossMissileAttackTimer > 5f)
+        {
+            bossdragon.SpawnMissiles();
+            BossMissileAttackTimer = 0f;
+        }
+
+
+        if (bossdragon.IsDead()) {
+            showAlert = true;
         }
     }
 
@@ -637,9 +748,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 //player.spriteArray[player.GetState().GetValue()].update(dt_l);
                 if (player.GetAttackState() != Player.PLAYER_STATE.RANGED_ATTACK)
                     player.spriteArray[player.GetState().GetValue()].update(dt);
-                bossdragon.spriteArray[bossdragon.GetState().GetValue()].update(dt_l);
 
-                EntityUpdate(dt);
+                EntityUpdate(dt, dt_l);
 
                 // Do attack things here
                 if (player.GetAttackState() == Player.PLAYER_STATE.RANGED_ATTACK) {
@@ -703,11 +813,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
 
                 player.FlipSpriteAnimation();
-
-
-                if (bossdragon.IsDead()) {
-                    showAlert = true;
-                }
 
                 // Trigger Alert box
                 if (!hasShownAlert && showAlert) {

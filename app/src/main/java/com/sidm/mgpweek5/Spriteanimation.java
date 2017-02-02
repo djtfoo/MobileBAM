@@ -55,6 +55,14 @@ public class Spriteanimation {
 
     }
 
+    public Bitmap GetFlipVertical()
+    {
+        Matrix matrix = new Matrix();
+        matrix.preScale(1, -1);
+        return flippedBitmap = Bitmap.createBitmap(bitmap, 0, 0,
+                spriteWidth, spriteHeight, matrix, false);
+    }
+
     public Bitmap getBitmap() {
         return bitmap;
     }
@@ -192,5 +200,6 @@ public class Spriteanimation {
 
     public boolean GetFlipSprites() { return flipSprites; }
     public void SetFlipSprites(boolean flip) { flipSprites = flip; }
+    public void SetFlipSprites(Bitmap flippedSprites) { flippedBitmap = flippedSprites; }
 
 }

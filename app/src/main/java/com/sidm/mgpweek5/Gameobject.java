@@ -12,17 +12,21 @@ public class Gameobject {
     public Spriteanimation[] spriteArray;   // Sprite animation
     public String type;
     public boolean toBeDestroyed;
-
+    public boolean shielded;
+    public boolean hasCollider;
     protected Collider AABBCollider = new Collider();
 
     // GameObject List
     public static Vector<Gameobject> goList = new Vector<Gameobject>();
+    public static Vector<Missile> missileList = new Vector<Missile>();
 
     // constructor
     protected Gameobject() {
         position.SetZero();
         type = "object";
+        hasCollider = true;
         toBeDestroyed = false;
+        shielded = false;
     }
 
     // Position
