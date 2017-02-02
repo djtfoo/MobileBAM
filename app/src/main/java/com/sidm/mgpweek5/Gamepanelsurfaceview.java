@@ -435,27 +435,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setX((int) bossdragon.GetPosition().x);
         bossdragon.spriteArray[bossdragon.GetState().GetValue()].setY((int) bossdragon.GetPosition().y);
 
-        if (debugInfo)
-        {
-            for(int i = 0; i < 1; i++)
-            {
-                Paint paint = new Paint();
-
-                // go AABB
-                Vector2 min = bossdragon.HitBoxes[i].GetMinAABB();
-                Vector2 max = bossdragon.HitBoxes[i].GetMaxAABB();
-                Vector2 goPos = bossdragon.position;
-
-                paint.setColor(Color.RED);
-                paint.setStrokeWidth(5);
-                paint.setStyle(Paint.Style.STROKE);
-                // sequence is minX, maxY, maxX, minY, where min point is the top left corner
-                canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
-                        goPos.x + max.x, goPos.y + min.y, paint);
-
-            }
-        }
-
         for(int i = 0; i < Gameobject.missileList.size(); ++i)
         {
             Missile go = (Missile)Gameobject.missileList.get(i);
@@ -482,6 +461,27 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             Missile go = (Missile)Gameobject.missileList.get(i);
             if(go.state == Missile.MISSILE_STATE.TRACKING)
                 DrawGameobject(canvas, go);
+        }
+
+        if (debugInfo)
+        {
+            for(int i = 0; i < 1; i++)
+            {
+                Paint paint = new Paint();
+
+                // go AABB
+                Vector2 min = bossdragon.HitBoxes[i].GetMinAABB();
+                Vector2 max = bossdragon.HitBoxes[i].GetMaxAABB();
+                Vector2 goPos = bossdragon.position;
+
+                paint.setColor(Color.RED);
+                paint.setStrokeWidth(5);
+                paint.setStyle(Paint.Style.STROKE);
+                // sequence is minX, maxY, maxX, minY, where min point is the top left corner
+                canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
+                        goPos.x + max.x, goPos.y + min.y, paint);
+
+            }
         }
 
         // draw the player
