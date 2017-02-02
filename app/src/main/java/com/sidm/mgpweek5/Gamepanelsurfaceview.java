@@ -452,7 +452,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 // sequence is minX, maxY, maxX, minY, where min point is the top left corner
                 canvas.drawRect(goPos.x + min.x, goPos.y + max.y,
                         goPos.x + max.x, goPos.y + min.y, paint);
-
             }
         }
 
@@ -854,7 +853,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 }
 
                 if (JumpButton.isPressed()) {
-                    Player.instance.Jump(map);
+                    Player.instance.Jump(map, soundmanager);
                 }
 
                 if(SwitchButton.isPressed() && !SwitchButton.hold)

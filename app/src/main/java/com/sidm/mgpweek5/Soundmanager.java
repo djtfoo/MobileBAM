@@ -15,7 +15,11 @@ public class Soundmanager {
 
     private SoundPool Sounds;
     private AudioAttributes audioAttributes;
+
     private int SFXslash1;
+    private int SFXportal;
+    private int SFXJump;
+    private int SFXArrowShot;
 
     SharedPreferences SharedPref_musicVol;
     int musicVol;
@@ -24,7 +28,7 @@ public class Soundmanager {
     int sfxVol;
 
     // Constructor
-    Soundmanager(Context context)
+    public Soundmanager(Context context)
     {
         BGM = new MediaPlayer();
         BGM = MediaPlayer.create(context, R.raw.boss1_bgm);
@@ -36,6 +40,9 @@ public class Soundmanager {
                 .setMaxStreams(2).build();
 
         SFXslash1 = Sounds.load(context, R.raw.slash1_sfx, 1);
+        SFXportal = Sounds.load(context, R.raw.portal_sfx, 1);
+        SFXJump = Sounds.load(context, R.raw.jump_sfx, 1);
+        SFXArrowShot = Sounds.load(context, R.raw.arrowshot_sfx, 1);
 
         SharedPref_musicVol = context.getSharedPreferences("MusicVolume", Context.MODE_PRIVATE);
         musicVol = SharedPref_musicVol.getInt("MusicVolume", 100);
@@ -66,6 +73,24 @@ public class Soundmanager {
     {
         float volume = sfxVol / 100.f;
         Sounds.play(SFXslash1, volume, volume, 0, 0, 1.5f);
+    }
+
+    public void PlaySFXPortal()
+    {
+        float volume = sfxVol / 100.f;
+        Sounds.play(SFXportal, volume, volume, 0, 0, 1.5f);
+    }
+
+    public void PlaySFXJump()
+    {
+        float volume = sfxVol / 100.f;
+        Sounds.play(SFXJump, volume, volume, 0, 0, 1.5f);
+    }
+
+    public void PlaySFXArrowShot()
+    {
+        float volume = sfxVol / 100.f;
+        Sounds.play(SFXArrowShot, volume, volume, 0, 0, 1.5f);
     }
 
     public void Exit()

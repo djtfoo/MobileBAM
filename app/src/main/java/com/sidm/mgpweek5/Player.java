@@ -223,11 +223,13 @@ public class Player {
         return isInAir;
     }
 
-    public void Jump(Tilemap map) {
+    public void Jump(Tilemap map, Soundmanager soundmanager) {
         if (!isInAir && this.attackState == PLAYER_STATE.IDLE)
         {
             isInAir = true;
             jumpSpeed = map.tileSize_Y * -5.f;
+
+            soundmanager.PlaySFXJump();
         }
     }
 
@@ -440,6 +442,8 @@ public class Player {
                 spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
             else if (bShootArrow)
             {
+                gameview.soundmanager.PlaySFXArrowShot();
+
                 Projectile temp = new Projectile();
                 temp.Init(gameview.bitmapList.get("Arrow"), gameview.Screenwidth, gameview.Screenheight);
                 temp.damage = 20;
