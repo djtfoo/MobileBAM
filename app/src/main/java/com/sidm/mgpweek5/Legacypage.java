@@ -53,6 +53,8 @@ public class Legacypage extends Activity implements View.OnClickListener {
     private Button btn_fbLogin;
     private Button btn_sharescore;
 
+    private boolean hasShared = false;
+
     boolean loggedin = false;
     private CallbackManager callbackManager;
     private LoginManager loginManager;
@@ -150,9 +152,12 @@ public class Legacypage extends Activity implements View.OnClickListener {
         }
 
         if (v == btn_sharescore) {
-            vibrator.Vibrate(50);
-            sharePost();
-            toast.show();
+            if (!hasShared) {
+                vibrator.Vibrate(50);
+                sharePost();
+                toast.show();
+                hasShared = true;
+            }
         }
     }
 

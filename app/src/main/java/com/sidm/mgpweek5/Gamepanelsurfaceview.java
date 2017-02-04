@@ -66,7 +66,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
     public float FPS;
     float deltaTime;
 
-    Vector2 pos = new Vector2();
     Tilemap map = new Tilemap();
     Bossdragon bossdragon = new Bossdragon();
 
@@ -553,7 +552,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     playerPos.x + max.x, playerPos.y + min.y, paint);
         }
 
-        // player's sword AABB
     }
 
     private void DrawGameobject(Canvas canvas, Gameobject go)
@@ -888,8 +886,16 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                 {
                     SwitchButton.hold = true;
                     AttackButton.active = !AttackButton.active;
-                    //JumpButton.active = !JumpButton.active;
+                    if (AttackButton.isPressed())
+                        AttackButton.SetPressed(false);
                     RangedJoyStick.active = !RangedJoyStick.active;
+                    if (RangedJoyStick.hold) {
+                        // force release
+                        RangedJoyStick.SetPressed(false);
+                        RangedJoyStick.hold = false;
+                        RangedJoyStick.PointerIndex = -1;
+                        Player.instance.SetShootArrow(true);
+                    }
                 }else if(!SwitchButton.isPressed() && SwitchButton.hold)
                 {
                     SwitchButton.hold = false;
@@ -1048,6 +1054,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             {
                 RangedJoyStick.SetPressed(true);
                 RangedJoyStick.PointerIndex = PointerID;
+                RangedJoyStick.SetTouchPos(CurrentTouchPos);
                 return;
             }
         }else if(RangedJoyStick.PointerIndex == PointerID)
@@ -1148,6 +1155,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             {
                 RangedJoyStick.SetPressed(true);
                 RangedJoyStick.PointerIndex = pointerID;
+                RangedJoyStick.SetTouchPos(CurrentTouchPos);
             }
         }else if(RangedJoyStick.PointerIndex == pointerID)
         {
@@ -1166,7 +1174,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
                     Buttons[i].SetPressed(true);
 
                     // Activate unique effects of button type
-                    if (Buttons[i].GetName() == "Attack")
+                    if (Buttons[i].GetName() == "Attack" && Player.instance.GetAttackState() == Player.PLAYER_STATE.IDLE)
                     {
                         Player.instance.SetStartMeleeAttack();
                     }

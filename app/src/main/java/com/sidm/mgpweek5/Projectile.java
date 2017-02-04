@@ -43,7 +43,6 @@ public class Projectile extends Gameobject {
 
     public boolean CollidedWithTileMap()
     {
-
         Vector2 MaxPosition = new Vector2();
         Vector2 MinPosition = new Vector2();
         MaxPosition.x = position.x  + spriteArray[0].getSpriteWidth() * 0.5f;
@@ -73,6 +72,9 @@ public class Projectile extends Gameobject {
     public void Update(float dt)
     {
         position.AddToThis(velocity.Multiply(dt));
+        IncreaseLifespan(dt);
+        if (HasExpired())
+            toBeDestroyed = true;
     }
 
     // Lifespan

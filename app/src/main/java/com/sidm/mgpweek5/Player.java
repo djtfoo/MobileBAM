@@ -580,4 +580,101 @@ public class Player {
             bShootArrow = shootArrow;
     }
 
+
+    // attack animations for Help Page
+    public void DoMeleeAttackAnimation(Helppanelview helppanelview, Soundmanager soundmanager)
+    {
+        if (bStartedAttack)
+        {
+            soundmanager.PlaySFXSlash1();
+            bStartedAttack = false;
+        }
+
+        else if (bFinishedFrame0 && spriteArray[attackState.GetValue()].getCurrentFrame() == 0) {
+            bFinishedAttackAnimation = true;
+        }
+        else if (spriteArray[attackState.GetValue()].getCurrentFrame() == spriteArray[attackState.GetValue()].getFrame() - 1)
+        {
+            // at last frame, did the player press attack button
+            if (helppanelview.AttackButton.isPressed())
+                bAttackButtonPressed = true;
+        }
+        else if (spriteArray[attackState.GetValue()].getCurrentFrame() > 0) {
+            bFinishedFrame0 = true;
+        }
+
+        if (bFinishedAttackAnimation)
+        {
+            if (bAttackButtonPressed)
+                SetStartMeleeAttack();
+            else
+            {
+                attackState = PLAYER_STATE.IDLE;
+                SetState(PLAYER_STATE.IDLE);
+            }
+        }
+    }
+
+    public void DoRangedAttackAnimation(float dt, Helppanelview helppanelview, Soundmanager soundmanager)
+    {
+        if (helppanelview.RangedJoyStick.GetValue().x < 0.f)
+        {
+            SetFlipSprite(true);
+        }
+        else
+        {
+            SetFlipSprite(false);
+        }
+
+        if (spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].getCurrentFrame() > 1)
+        {
+            if (bReleasedArrow)
+                spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
+            else if (bShootArrow)
+            {
+                soundmanager.PlaySFXArrowShot();
+
+                Projectile temp = new Projectile();
+                temp.Init(helppanelview.arrowProjectileBitmap, helppanelview.Screenwidth, helppanelview.Screenheight);
+                temp.damage = 20;
+                temp.SetPosition(new Vector2(position));
+                temp.SetVelocity(helppanelview.RangedJoyStick.GetValue().GetNormalized().Multiply(1000));
+
+                temp.AABBCollider.SetMaxAABB(new Vector2(0.25f * helppanelview.map.tileSize_X, 0.25f * helppanelview.map.tileSize_X));
+                temp.AABBCollider.SetMinAABB(new Vector2(-0.25f * helppanelview.map.tileSize_X, -0.25f * helppanelview.map.tileSize_X));
+
+                helppanelview.golist.add(temp);
+
+                spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].setCurrentFrame(3);
+
+                bShootArrow = false;
+                bReleasedArrow = true;
+            }
+        }
+        else if (spriteArray[attackState.GetValue()].getCurrentFrame() > 0)
+        {
+            bFinishedFrame0 = true;
+            spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
+        }
+        else if (spriteArray[attackState.GetValue()].getCurrentFrame() == 0) {
+            spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].update(dt);
+            if (bFinishedFrame0)
+                bFinishedAttackAnimation = true;
+        }
+
+        if (bFinishedAttackAnimation)
+        {
+            if (helppanelview.RangedJoyStick.isPressed() || helppanelview.RangedJoyStick.hold) {
+                SetStartRangedAttack();
+                spriteArray[PLAYER_STATE.RANGED_ATTACK.GetValue()].setCurrentFrame(1);
+                bFinishedFrame0 = true;
+            }
+            else
+            {
+                attackState = PLAYER_STATE.IDLE;
+                SetState(PLAYER_STATE.IDLE);
+            }
+        }
+    }
+
 }

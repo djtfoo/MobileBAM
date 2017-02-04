@@ -42,6 +42,7 @@ public class Worldpanelview extends View implements SensorEventListener {
     Typeface font;
     int textSize;
 
+    // Buttons
     GUIbutton BossDragonButton;
     GUIbutton BackButton;
 
@@ -195,7 +196,8 @@ public class Worldpanelview extends View implements SensorEventListener {
         // if player is at a portal, render guiding text
         if (isInFrontOfPortal)
         {
-            RenderTextOnScreen(canvas, "Tap to Enter Portal", (int)(Screenwidth * 0.35f), (int) (Screenheight * 0.32f), textSize);
+            String msg = "Tap to Enter Portal";
+            RenderTextOnScreen(canvas, msg, (int)(Screenwidth * 0.5f - textSize * msg.length() * 0.25f), (int) (Screenheight * 0.32f), textSize);
         }
 
         // Buttons
@@ -212,11 +214,23 @@ public class Worldpanelview extends View implements SensorEventListener {
         invalidate();
     }
 
+    private boolean CheckButtonPressed(Vector2 m_touch, GUIbutton button)
+    {
+        Vector2 buttonPos = new Vector2(button.GetPosition());
+        buttonPos.x += button.GetButtonSize() / 2;
+        buttonPos.y += button.GetButtonSize() / 2;
+        if(buttonPos.Subtract(m_touch).GetLength() < button.GetButtonSize() / 2) {
+            return true;
+            //Log.v("Input", "Button Pressed!");
+        }
+
+        return false;
+    }
+
     @Override
     public boolean onTouchEvent(MotionEvent event) {
         int action = event.getAction();
 
-        //Log.v("TEST", Integer.toString(event.getPointerCount()));
         switch(action & event.ACTION_MASK)
         {
             case MotionEvent.ACTION_DOWN:
@@ -224,22 +238,14 @@ public class Worldpanelview extends View implements SensorEventListener {
 
                 Vector2 touchPos = new Vector2(event.getX(), event.getY());
 
-                Vector2 backButtonPos = new Vector2(BackButton.GetPosition());
-                backButtonPos.x += BackButton.GetButtonSize() / 2;
-                backButtonPos.y += BackButton.GetButtonSize() / 2;
-
-                Vector2 dragonButtonPos = new Vector2(BossDragonButton.GetPosition());
-                dragonButtonPos.x += BossDragonButton.GetButtonSize() / 2;
-                dragonButtonPos.y += BossDragonButton.GetButtonSize() / 2;
-
-                if(backButtonPos.Subtract(touchPos).GetLength() < BackButton.GetButtonSize() / 2) {
+                if(CheckButtonPressed(touchPos, BackButton)) {
 
                     vibrator.Vibrate(50);
                     // Activate unique effects of button type
                     if (playerPos.x > 0.625f * Screenwidth /*&& playerPos.x < 0.875f * Screenwidth*/)
                         GoToMainMenu();
                 }
-                else if (dragonButtonPos.Subtract(touchPos).GetLength() < BackButton.GetButtonSize() / 2) {
+                else if (CheckButtonPressed(touchPos, BossDragonButton)) {
 
                     vibrator.Vibrate(50);
                     // Activate unique effects of button type

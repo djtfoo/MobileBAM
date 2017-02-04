@@ -27,7 +27,7 @@ public class Helppage extends Activity {
         //vibrator = new Vibratormanager(this);
 
         //setContentView(R.layout.helppage);
-        setContentView(new Helppanelview(this));
+        setContentView(new Helppanelview(this, this));
 
         //btn_back = (Button)findViewById(R.id.btn_back);
         //btn_back.setOnClickListener(this);
