@@ -47,7 +47,9 @@ public class Helppanelview extends View {
     GUIbutton PrevPageButton;
 
     // HELP PAGE 1 VARIABLES
-    Bossdragon bossdragon = new Bossdragon();
+    Spriteanimation bossdragon;
+    Bitmap missile;
+    Bitmap shieldgenerator;
 
     // HELP PAGE 2 VARIABLES
     private Bitmap tile_ground;
@@ -97,6 +99,12 @@ public class Helppanelview extends View {
 
         Player.instance.Init(context, map, Screenwidth, Screenheight);
         Player.instance.SetPosition((map.GetCols() * 0.5f) * map.tileSize_X, (map.GetRows() - 3) * map.tileSize_Y);
+
+        bossdragon = new Spriteanimation(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.dragon_idle), Screenwidth, Screenheight / 4, true), 0, 0, 4, 4);
+        bossdragon.setX((int)(3.f * map.tileSize_X));
+        bossdragon.setY((int)(5.f * map.tileSize_Y));
+        missile = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.missile), Screenheight / 4, Screenheight / 4, true);
+        shieldgenerator = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.tower_shieldgenerator), Screenwidth / 4, Screenheight / 4, true);
     }
 
     public void InitButtons() {
@@ -181,7 +189,7 @@ public class Helppanelview extends View {
     @Override
     public void onDraw(Canvas canvas) {
 
-        float FPS = 1 / dt;
+        //float FPS = 1 / dt;
 
         if (b_ChangeState) {
             ChangeState();
@@ -192,9 +200,30 @@ public class Helppanelview extends View {
         // background
         canvas.drawBitmap(bg, 0, 0, null);
 
+        String header = "";
         switch (helpState)
         {
             case 0:
+                // Header
+                header = "INSTRUCTIONS";
+                RenderTextOnScreen(canvas, header, (int)(0.5f * Screenwidth - header.length() * textSize * 0.8f), (int)(textSize * 4.f), (int)(textSize * 2.5f), 255, 2, 0, 79);
+
+                // boss dragon
+                bossdragon.draw(canvas);
+
+                // missile
+                canvas.drawBitmap(missile, 7.f * map.tileSize_X, 4.f * map.tileSize_Y, null);
+
+                // shield generator
+                canvas.drawBitmap(shieldgenerator, 11.f * map.tileSize_X, 4.f * map.tileSize_Y, null);
+
+                // Text
+                RenderTextOnScreen(canvas, "Reduce the boss HP to 0", (int)(0.5f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "Avoid or destroy", (int)(6.5f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "missiles", (int)(6.6f * map.tileSize_X), (int)(6.8f * map.tileSize_Y + textSize), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "Shield generators prevent", (int)(10.4f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "damage, destroy them", (int)(10.5f * map.tileSize_X), (int)(6.8f * map.tileSize_Y + textSize), textSize, 255, 255, 255, 255);
+
                 // Buttons
                 DrawButtons(canvas);
                 canvas.drawBitmap(PrevPageButton.GetBitMapPressed(), (int) (PrevPageButton.GetPosition().x), (int) (PrevPageButton.GetPosition().y), null);
@@ -202,7 +231,6 @@ public class Helppanelview extends View {
                 break;
 
             case 1:
-
                 DrawTilemap(canvas);
                 DrawPlayer(canvas);
 
@@ -211,6 +239,10 @@ public class Helppanelview extends View {
                     Gameobject go = golist.get(i);
                     DrawGameobject(canvas, go);
                 }
+
+                // Header
+                header = "CONTROLS";
+                RenderTextOnScreen(canvas, header, (int)(0.5f * Screenwidth - header.length() * textSize * 0.8f), (int)(2.f * map.tileSize_Y), (int)(map.tileSize_Y), 255, 2, 0, 79);
 
                 // Buttons
                 DrawButtons(canvas);
@@ -235,6 +267,7 @@ public class Helppanelview extends View {
         switch (helpState)
         {
             case 0:
+                bossdragon.update(dt);
                 break;
 
             case 1:
@@ -347,11 +380,11 @@ public class Helppanelview extends View {
     }
 
     // Draw functions
-    public void RenderTextOnScreen(Canvas canvas, String text, int posX, int posY, int textsize) {
+    public void RenderTextOnScreen(Canvas canvas, String text, int posX, int posY, int textsize, int a, int r, int g, int b) {
 
         Paint paint = new Paint();
 
-        paint.setARGB(255, 255, 255, 255);
+        paint.setARGB(a, r, g, b);
         paint.setStrokeWidth(100);
         paint.setTextSize(textsize);
         paint.setTypeface(font);

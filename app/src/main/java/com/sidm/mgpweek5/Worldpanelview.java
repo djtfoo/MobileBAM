@@ -78,7 +78,10 @@ public class Worldpanelview extends View implements SensorEventListener {
         ground = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.portal_ground), Screenwidth, (int)(Screenheight * 0.1375f), true);
 
         homeText = Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.portal_home), (int)(Screenwidth * 0.2f), Screenheight / 5, true);
+
         bossdragon = new Spriteanimation(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.dragon_idle), Screenwidth, Screenheight / 4, true), 0, 0, 4, 4);
+        bossdragon.setX((int)(Screenwidth * 0.27f));
+        bossdragon.setY((int)(Screenheight * 0.6f));
 
         player = new Spriteanimation(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(context.getResources(), R.drawable.backview_run), Screenwidth / 2, Screenheight / 5, true), 0, 0, 4, 6);
 
@@ -177,8 +180,6 @@ public class Worldpanelview extends View implements SensorEventListener {
         canvas.drawBitmap(homeText, Screenwidth * 0.65f, Screenheight * 0.5f, null);
 
         // boss dragon
-        bossdragon.setX((int)(Screenwidth * 0.27f));
-        bossdragon.setY((int)(Screenheight * 0.6f));
         bossdragon.draw(canvas);
 
         // arch

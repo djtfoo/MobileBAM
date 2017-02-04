@@ -548,8 +548,8 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
             paint.setStyle(Paint.Style.STROKE);
 
             // sequence is minX, maxY, maxX, minY, where min point is the top left corner
-            canvas.drawRect(playerPos.x + min.x, playerPos.y + max.y,
-                    playerPos.x + max.x, playerPos.y + min.y, paint);
+            canvas.drawRect(playerPos.x + min.x, playerPos.y + min.y,
+                    playerPos.x + max.x, playerPos.y + max.y, paint);
         }
 
     }

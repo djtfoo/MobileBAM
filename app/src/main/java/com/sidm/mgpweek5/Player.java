@@ -183,7 +183,7 @@ public class Player {
     public void MoveLeft(float deltaTime, Tilemap map)
     {
         float newPosX = position.x - deltaTime * SPEED;
-        int X = (int)((newPosX - 0.1f * map.tileSize_X) / map.tileSize_X);
+        int X = (int)((newPosX - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.05f) / map.tileSize_X);
         int Y = (int)(position.y / map.tileSize_Y);
 
         if (!CheckCollisionLeftRight(map, X, Y)) {
@@ -195,7 +195,7 @@ public class Player {
     public void MoveRight(float deltaTime, Tilemap map)
     {
         float newPosX = position.x + deltaTime * SPEED;
-        int X = (int)((newPosX + 0.1f * map.tileSize_X) / map.tileSize_X);
+        int X = (int)((newPosX + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.15f) / map.tileSize_X);
         int Y = (int)(position.y / map.tileSize_Y);
 
         if (!CheckCollisionLeftRight(map, X, Y)) {
@@ -205,18 +205,20 @@ public class Player {
 
     // Jump
     public void CheckIsInAir(Tilemap map) {
-        int X;
+        int X, X2;
         if (flipSprites)    // facing left
         {
-            X = (int)((position.x + 0.3f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)((position.x - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.05f) / map.tileSize_X);
         }
         else
         {
-            X = (int)((position.x - 0.4f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
         }
         int Y = (int)((position.y + map.tileSize_Y) / map.tileSize_Y);
 
-        if (!CheckCollisionUpDown(map, X, Y)) {
+        if (!CheckCollisionUpDown(map, X, Y) && !CheckCollisionUpDown(map, X2, Y)) {
             isInAir = true;
         }
     }
@@ -258,13 +260,13 @@ public class Player {
         int X, X2;
         if (flipSprites)    // facing left
         {
-            X = (int)((position.x + 0.3f * map.tileSize_X) / map.tileSize_X);
-            X2 = (int)((position.x) / map.tileSize_X);
+            X = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)(position.x / map.tileSize_X);
         }
         else
         {
-            X = (int)((position.x - 0.4f * map.tileSize_X) / map.tileSize_X);
-            X2 = (int)((position.x) / map.tileSize_X);
+            X = (int)((position.x - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
         }
         int Y = (int)((newPosY - map.tileSize_Y + (0.9f * map.tileSize_Y)) / map.tileSize_Y);
 
@@ -279,18 +281,20 @@ public class Player {
     public void UpdateFreefall(float deltaTime, Tilemap map) {
         float newPosY = position.y + jumpSpeed * deltaTime;
 
-        int X;
+        int X, X2;
         if (flipSprites)    // facing left
         {
-            X = (int)((position.x  + 0.3f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)((position.x - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.05f) / map.tileSize_X);
         }
         else
         {
-            X = (int)((position.x - 0.4f * map.tileSize_X) / map.tileSize_X);
+            X = (int)((position.x - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
         }
         int Y = (int)((newPosY + map.tileSize_Y) / map.tileSize_Y);
 
-        if (CheckCollisionUpDown(map, X, Y)) {
+        if (CheckCollisionUpDown(map, X, Y) || CheckCollisionUpDown(map, X2, Y)) {
             jumpSpeed = 0.f;
             isInAir = false;
             position.y = (Y - 1) * map.tileSize_Y;
