@@ -93,7 +93,7 @@ public class Helppanelview extends View {
 
         // Font
         font = Typeface.createFromAsset(getContext().getAssets(), "fonts/arial.ttf");
-        textSize = (int) (0.3 * map.tileSize_X * ((float) Screenwidth / (float) Screenheight));
+        textSize = (int) (0.2f * map.tileSize_X * ((float) Screenwidth / (float) Screenheight));
 
         // Buttons
         InitButtons();
@@ -219,11 +219,11 @@ public class Helppanelview extends View {
                 canvas.drawBitmap(shieldgenerator, 11.f * map.tileSize_X, 4.f * map.tileSize_Y, null);
 
                 // Text
-                RenderTextOnScreen(canvas, "Reduce the boss HP to 0", (int)(0.5f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
-                RenderTextOnScreen(canvas, "Avoid or destroy", (int)(6.5f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
-                RenderTextOnScreen(canvas, "missiles", (int)(6.6f * map.tileSize_X), (int)(6.8f * map.tileSize_Y + textSize), textSize, 255, 255, 255, 255);
-                RenderTextOnScreen(canvas, "Shield generators prevent", (int)(10.4f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
-                RenderTextOnScreen(canvas, "damage, destroy them", (int)(10.5f * map.tileSize_X), (int)(6.8f * map.tileSize_Y + textSize), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "Reduce the boss HP to 0", (int)(1.f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "Avoid or destroy", (int)(7.f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "missiles", (int)(7.1f * map.tileSize_X), (int)(6.8f * map.tileSize_Y + textSize), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "Shield generators prevent", (int)(10.9f * map.tileSize_X), (int)(6.8f * map.tileSize_Y), textSize, 255, 255, 255, 255);
+                RenderTextOnScreen(canvas, "damage, destroy them", (int)(11.f * map.tileSize_X), (int)(6.8f * map.tileSize_Y + textSize), textSize, 255, 255, 255, 255);
 
                 // Buttons
                 DrawButtons(canvas);
@@ -256,7 +256,9 @@ public class Helppanelview extends View {
                 DrawButtons(canvas);
                 canvas.drawBitmap(NextPageButton.GetBitMapPressed(), (int) (NextPageButton.GetPosition().x), (int) (NextPageButton.GetPosition().y), null);
                 if(RangedJoyStick.isPressed()) {
-                    Vector2 Test = RangedJoyStick.GetValue().Multiply(5000);
+                    Vector2 Test = RangedJoyStick.GetValue();
+                    if (!Test.IsZero())
+                        Test = Test.GetNormalized().Multiply(5000);
                     Test = Test.Add(Player.instance.GetPosition());
                     Paint line = new Paint();
                     line.setARGB(100, 255, 0, 0);
