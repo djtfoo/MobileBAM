@@ -195,7 +195,7 @@ public class Player {
     public void MoveRight(float deltaTime, Tilemap map)
     {
         float newPosX = position.x + deltaTime * SPEED;
-        int X = (int)((newPosX + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.15f) / map.tileSize_X);
+        int X = (int)((newPosX + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.05f) / map.tileSize_X);
         int Y = (int)(position.y / map.tileSize_Y);
 
         if (!CheckCollisionLeftRight(map, X, Y)) {
@@ -214,7 +214,7 @@ public class Player {
         else
         {
             X = (int)((position.x - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
-            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.05f) / map.tileSize_X);
         }
         int Y = (int)((position.y + map.tileSize_Y) / map.tileSize_Y);
 
@@ -266,7 +266,7 @@ public class Player {
         else
         {
             X = (int)((position.x - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
-            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.05f) / map.tileSize_X);
         }
         int Y = (int)((newPosY - map.tileSize_Y + (0.9f * map.tileSize_Y)) / map.tileSize_Y);
 
@@ -290,7 +290,7 @@ public class Player {
         else
         {
             X = (int)((position.x - spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
-            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.1f) / map.tileSize_X);
+            X2 = (int)((position.x + spriteArray[PLAYER_STATE.IDLE.GetValue()].getSpriteWidth() * 0.05f) / map.tileSize_X);
         }
         int Y = (int)((newPosY + map.tileSize_Y) / map.tileSize_Y);
 
@@ -450,7 +450,7 @@ public class Player {
                         }
                         else if (go.type == "missile") {
                             Missile missile = (Missile)go;
-                            if (missile.shielded) {
+                            if (!missile.shielded) {
                                 missile.toBeDestroyed = true;
                                 ToBeCreated.add(go.position);
                             }
