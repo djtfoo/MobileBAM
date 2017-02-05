@@ -490,7 +490,9 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
 
         if(RangedJoyStick.isPressed())
         {
-            Vector2 Test = RangedJoyStick.GetValue().Multiply(5000);
+            Vector2 Test = RangedJoyStick.GetValue();
+            if (!Test.IsZero())
+                Test = Test.GetNormalized().Multiply(5000);
             Test = Test.Add(Player.instance.GetPosition());
             Paint line = new Paint();
             line.setARGB(100, 255, 0, 0);
