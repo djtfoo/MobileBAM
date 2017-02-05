@@ -56,6 +56,7 @@ public class Helppanelview extends View {
     Tilemap map = new Tilemap();
 
     public Vector<Gameobject> golist = new Vector<Gameobject>();
+    Vector<Vector2> ToBeCreated =  new Vector<Vector2>();
     public Bitmap arrowProjectileBitmap;
 
     private final int ButtonCount = 8;
@@ -240,6 +241,13 @@ public class Helppanelview extends View {
                     DrawGameobject(canvas, go);
                 }
 
+                for (int i = 0; i < Gameobject.particleList.size(); ++i)
+                {
+                    Gameobject go = Gameobject.particleList.get(i);
+                    DrawGameobject(canvas, go);
+                }
+
+
                 // Header
                 header = "CONTROLS";
                 RenderTextOnScreen(canvas, header, (int)(0.5f * Screenwidth - header.length() * textSize * 0.8f), (int)(2.f * map.tileSize_Y), (int)(map.tileSize_Y), 255, 2, 0, 79);
@@ -247,6 +255,16 @@ public class Helppanelview extends View {
                 // Buttons
                 DrawButtons(canvas);
                 canvas.drawBitmap(NextPageButton.GetBitMapPressed(), (int) (NextPageButton.GetPosition().x), (int) (NextPageButton.GetPosition().y), null);
+                if(RangedJoyStick.isPressed()) {
+                    Vector2 Test = RangedJoyStick.GetValue().Multiply(5000);
+                    Test = Test.Add(Player.instance.GetPosition());
+                    Paint line = new Paint();
+                    line.setARGB(100, 255, 0, 0);
+                    line.setStyle(Paint.Style.STROKE);
+                    line.setStrokeWidth(10);
+                    canvas.drawLine(Player.instance.GetPosition().x, Player.instance.GetPosition().y, Test.x, Test.y, line);
+                }
+
 
                 //RenderTextOnScreen(canvas, "FPS " + FPS, (int) (1.5f * map.tileSize_X), (int) (0.4f * map.tileSize_Y), textSize);
 
@@ -254,6 +272,19 @@ public class Helppanelview extends View {
         }
 
         invalidate();
+    }
+
+    public boolean CollidedWithHelpTileMap(Gameobject go)
+    {
+        int X = (int)((go.position.x) / map.tileSize_X);
+        int Y = (int)((go.position.y) / map.tileSize_Y);
+        if(map.tilemap[Y][X] == 1) {
+            return true;
+        }
+
+
+        return false;
+
     }
 
     private void Update()
@@ -275,7 +306,24 @@ public class Helppanelview extends View {
 
                 for (int i = 0; i < golist.size(); ++i)
                 {
-                    golist.get(i).Update(dt);
+                    Gameobject go1 = golist.get(i);
+                    go1.Update(dt);
+
+                    if(go1.type == "projectile")
+                    {
+                        Projectile temp = (Projectile)go1;
+                        if(CollidedWithHelpTileMap(temp))
+                        {
+                            temp.toBeDestroyed = true;
+                            ToBeCreated.add(temp.position);
+                        }
+                    }
+
+                }
+
+                for(int i = 0; i < Gameobject.particleList.size(); ++i)
+                {
+                    Gameobject.particleList.get(i).Update(dt);
                 }
 
                 Iterator<Gameobject> goItr = golist.iterator();
@@ -285,6 +333,29 @@ public class Helppanelview extends View {
                     Gameobject temp = goItr.next();
                     if(temp.toBeDestroyed)
                         goItr.remove();
+                }
+
+                Iterator<Particle> particleItr = Gameobject.particleList.iterator();
+
+                while(particleItr.hasNext())
+                {
+                    Gameobject temp = particleItr.next();
+                    if(temp.toBeDestroyed)
+                        particleItr.remove();
+                }
+
+                if (ToBeCreated.size() > 0)
+                    soundManager.PlaySFXExplosion();
+
+
+                while(ToBeCreated.size() > 0)
+                {
+                    Particle temp = new Particle();
+                    temp.Init(Bitmap.createScaledBitmap(BitmapFactory.decodeResource(getResources(), R.drawable.explosion),
+                            (int) (2f * map.tileSize_X) * 4, (int) (2f * map.tileSize_X), true));
+                    temp.position = ToBeCreated.lastElement();
+                    Gameobject.particleList.add(temp);
+                    ToBeCreated.remove(ToBeCreated.lastElement());
                 }
                 break;
         }

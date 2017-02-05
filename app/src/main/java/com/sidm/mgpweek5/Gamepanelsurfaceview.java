@@ -492,7 +492,6 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         {
             Vector2 Test = RangedJoyStick.GetValue().Multiply(5000);
             Test = Test.Add(Player.instance.GetPosition());
-            Log.v("Value", "Line Pos: " + RangedJoyStick.GetValue().ToString() + " Player Pos: " + Player.instance.GetPosition().ToString());
             Paint line = new Paint();
             line.setARGB(100, 255, 0, 0);
             line.setStyle(Paint.Style.STROKE);
@@ -747,7 +746,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         while(ToBeCreated.size() > 0)
         {
             Particle temp = new Particle();
-            temp.Init();
+            temp.Init(bitmapList.get("explosion"));
             temp.position = ToBeCreated.lastElement();
             Gameobject.particleList.add(temp);
             ToBeCreated.remove(ToBeCreated.lastElement());
@@ -760,6 +759,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         BossUpdate(dt, dt_l);
         for (int i = 0; i < Gameobject.goList.size(); ++i)
         {
+            if(Gameobject.goList.get(i).toBeDestroyed == false)
             Gameobject.goList.get(i).Update(dt);
         }
 
@@ -775,6 +775,7 @@ public class Gamepanelsurfaceview extends SurfaceView implements SurfaceHolder.C
         while(goItr.hasNext())
         {
             Gameobject temp = goItr.next();
+
             if(temp.toBeDestroyed)
                 goItr.remove();
         }

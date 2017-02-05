@@ -18,10 +18,10 @@ public class Particle extends Gameobject
         type = "particle";
     };
 
-    public void Init()
+    public void Init(Bitmap explosion)
     {
         hasCollider = false;
-        spriteArray[0] = new Spriteanimation(Gamepanelsurfaceview.instance.bitmapList.get("explosion"), 0, 0, 8, 4);
+        spriteArray[0] = new Spriteanimation(explosion, 0, 0, 8, 4);
     }
 
     public void Update(float dt)

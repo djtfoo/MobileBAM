@@ -467,7 +467,7 @@ public class Player {
             while(ToBeCreated.size() > 0)
             {
                 Particle temp = new Particle();
-                temp.Init();
+                temp.Init(gameview.bitmapList.get("explosion"));
                 temp.position = ToBeCreated.lastElement();
                 Gameobject.particleList.add(temp);
                 ToBeCreated.remove(ToBeCreated.lastElement());
